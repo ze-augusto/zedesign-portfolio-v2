@@ -43,18 +43,11 @@ export default function HomePage() {
 
       {/* Hero */}
       <section className="hero">
-        <span className="tag">
-          <span className="square" />
-          {t.bio.title} · N° 01
-        </span>
         <h1 className="name">
-          <span>JOSÉ</span>
-          <span className="row2">
-            <span className="stamp">AUGUSTO</span>
-          </span>
-          <span className="row3">
-            MARINHO<span style={{ color: 'var(--br-accent)' }}>.</span>
-          </span>
+          {lang === 'PT'
+            ? <>Olá! Me chamo <s>José Augusto</s> <span className="ze">Zé</span>.</>
+            : <>Hi! I&rsquo;m <s>José Augusto</s> — call me <span className="ze">Zé</span>.</>
+          }
         </h1>
         <div className="below">
           <div className="cell">

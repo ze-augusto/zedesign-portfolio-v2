@@ -73,17 +73,18 @@
 }
 .br .hero .tag .square { width: 10px; height: 10px; background: var(--br-accent); }
 .br .hero .name {
-  font-size: 220px;
-  line-height: 0.82;
+  font-size: 80px;
+  line-height: 1.5;
   font-weight: 900;
-  letter-spacing: -0.04em;
+  letter-spacing: -0.01em;
   margin: 24px 0 0;
-  text-transform: uppercase;
-  font-stretch: 110%;
 }
-.br .hero .name .row2 { display: block; padding-left: 12%; }
-.br .hero .name .row3 { display: block; }
-.br .hero .name .stamp { color: var(--br-accent); display: inline-block; transform: rotate(-2deg); }
+.br .hero .name s {
+  color: var(--br-mute);
+  text-decoration: line-through;
+  font-weight: 500;
+}
+.br .hero .name .ze { color: var(--br-accent); }
 .br .hero .below {
   display: grid;
   grid-template-columns: 1fr 1fr 1fr;
