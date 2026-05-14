@@ -43,27 +43,38 @@ export default function HomePage() {
 
       {/* Hero */}
       <section className="hero">
-        <h1 className="name">
-          {lang === 'PT'
-            ? <>Olá! Me chamo <s>José Augusto</s> <span className="ze">Zé</span>.</>
-            : <>Hi! I&rsquo;m <s>José Augusto</s> — call me <span className="ze">Zé</span>.</>
-          }
-        </h1>
-        <div className="below">
-          <div className="cell">
-            <span className="k">↳ {t.hero.role}</span>
-            <p className="v">{t.hero.intro}</p>
+        <div className="top-row">
+          <div className="left">
+            <div>
+              <p className="subtitle">{t.hero.subtitle}</p>
+              <h1 className="name">{t.hero.nameShort}</h1>
+            </div>
+            <div className="desc">
+              <p className="role">↳ {t.hero.role}</p>
+              <div className="intro">
+                <p>{t.hero.intro1}</p>
+                <p>{t.hero.intro2pre}<span className="em">{t.hero.intro2em}</span></p>
+              </div>
+            </div>
           </div>
+          <div className="photo">
+            <img src="/images/foto_ze.jpg" alt="Zé" />
+          </div>
+        </div>
+        <div className="below">
           <div className="cell">
             <span className="k">{lang === 'PT' ? 'Localização' : 'Location'}</span>
             <p className="v">{t.hero.location}</p>
           </div>
           <div className="cell">
             <span className="k">Status</span>
-            <span className="pill">
-              <span className="dot" />
-              {t.hero.available}
-            </span>
+            <span className="pill">● {t.hero.available}</span>
+          </div>
+          <div className="cell">
+            <span className="k">{lang === 'PT' ? 'Contato' : 'Contact'}</span>
+            <p className="v">
+              <a href="/contato">{t.hero.contactCta}</a>{t.hero.contactSuffix}
+            </p>
           </div>
         </div>
       </section>

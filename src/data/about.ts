@@ -10,7 +10,7 @@ export interface LangItem { k: string; v: string; }
 export interface Translations {
   meta: { lang: string; other: string };
   nav: { home: string; projects: string; about: string; contact: string };
-  hero: { role: string; location: string; available: string; name: string; intro: string };
+  hero: { subtitle: string; nameShort: string; role: string; intro1: string; intro2pre: string; intro2em: string; location: string; available: string; contactCta: string; contactSuffix: string };
   bio: { title: string; p1: string; p2: string; p3: string };
   what: { title: string; items: WhatItem[] };
   process: { title: string; subtitle: string; steps: ProcessStep[] };
@@ -26,11 +26,16 @@ export const PT: Translations = {
   meta: { lang: 'PT-BR', other: 'EN' },
   nav: { home: 'Home', projects: 'Projetos', about: 'Sobre', contact: 'Contato' },
   hero: {
+    subtitle: 'Pode me chamar de',
+    nameShort: 'Zé.',
     role: 'Product Designer',
-    location: 'Fortaleza, Brasil — disponível remoto',
-    available: 'Disponível para freelas e roles full-time',
-    name: 'José Augusto Marinho',
-    intro: 'Product Designer com formação em Engenharia de Produção. Projeto sistemas complexos de ponta a ponta — do levantamento de requisitos à validação das microinterações no front-end.',
+    intro1: 'Product Designer com formação em Engenharia de Produção.',
+    intro2pre: 'Focado na construção de sistemas complexos, ',
+    intro2em: 'do levantamento de requisitos ao handoff.',
+    location: 'Brasil — disponível para deslocamento e trabalhos remotos',
+    available: 'Aberto para projetos freelance e cargos full-time',
+    contactCta: 'Clique aqui',
+    contactSuffix: ' e fale comigo!',
   },
   bio: {
     title: 'Sobre',
@@ -134,11 +139,16 @@ export const EN: Translations = {
   meta: { lang: 'EN', other: 'PT' },
   nav: { home: 'Home', projects: 'Projects', about: 'About', contact: 'Contact' },
   hero: {
+    subtitle: 'You can call me',
+    nameShort: 'Zé.',
     role: 'Product Designer',
-    location: 'Fortaleza, Brazil — open to remote',
-    available: 'Available for freelance & full-time roles',
-    name: 'José Augusto Marinho',
-    intro: 'Product Designer with a background in Industrial Engineering. I design complex systems end-to-end — from requirements gathering to validating microinteractions in the front-end.',
+    intro1: 'Product Designer with an Industrial Engineering background.',
+    intro2pre: 'Focused on building complex systems, ',
+    intro2em: 'from requirements gathering to handoff.',
+    location: 'Brazil — available for remote work and travel',
+    available: 'Open to freelance projects and full-time roles',
+    contactCta: 'Click here',
+    contactSuffix: ' and let\'s talk!',
   },
   bio: {
     title: 'About',
