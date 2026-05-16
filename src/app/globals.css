@@ -3,5 +3,9 @@
 @variant dark (&:where(.dark, .dark *));
 
 @theme {
-  --color-brand: #0066FF;
+  /* ─── Color palette ─── */
+  --color-ink:    #0A0A0A;   /* text, strokes, borders */
+  --color-paper:  #EBEAE9;   /* page background */
+  --color-brand:  #F5E22A;   /* brand yellow */
+  --color-muted:  #5B5B5B;   /* secondary / subdued text */
 }

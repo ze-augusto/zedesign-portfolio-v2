@@ -1,16 +1,23 @@
-/* Brutalist Bold — Portfolio. Namespace: .br */
+/* Brutalist Bold — Portfolio. Namespace: .br
+   ─────────────────────────────────────────────────────────────
+   Breakpoints:
+     • Mobile         ≤ 767px
+     • Tablet         768px – 1023px
+     • Desktop small  1024px – 1439px   (default)
+     • Desktop large  ≥ 1440px
+*/
 
 .br {
-  --br-bg: #ebe5d8;
-  --br-fg: #0a0a0a;
-  --br-mute: #5b5b5b;
-  --br-accent: #ff4a1c;
-  --br-yellow: #f5e22a;
+  --br-bg:     var(--color-paper);    /* #EBEAE9 */
+  --br-fg:     var(--color-ink);      /* #0A0A0A */
+  --br-mute:   var(--color-muted);    /* #5B5B5B */
+  --br-yellow: var(--color-brand);    /* #F5E22A */
   font-family: var(--font-archivo), 'Helvetica Neue', Helvetica, sans-serif;
   background: var(--br-bg);
   color: var(--br-fg);
   width: 100%;
   min-height: 100%;
+  overflow-x: hidden;
 }
 .br * { box-sizing: border-box; }
 .br h1, .br h2, .br h3, .br h4, .br p { margin: 0; }
@@ -24,13 +31,14 @@
   background: var(--br-fg);
   color: var(--br-bg);
 }
+.br .top .lhs { display: flex; }
 .br .top .mark {
   padding: 16px 28px;
   font-weight: 800;
   font-size: 14px;
   letter-spacing: 0.04em;
   text-transform: uppercase;
-  border-right: 2px solid rgba(235,229,216,0.2);
+  border-right: 2px solid rgba(235,234,233,0.2);
 }
 .br .top .nav { display: flex; }
 .br .top .nav a {
@@ -38,7 +46,7 @@
   font-size: 14px;
   text-transform: uppercase;
   letter-spacing: 0.06em;
-  border-right: 0.5px solid rgba(235,229,216,0.15);
+  border-right: 0.5px solid rgba(235,234,233,0.15);
   color: var(--br-bg);
   text-decoration: none;
   display: flex;
@@ -50,7 +58,7 @@
   background: var(--br-fg);
   color: var(--br-bg);
   border: none;
-  border-left: 0.5px solid rgba(235,229,216,0.15);
+  border-left: 0.5px solid rgba(235,234,233,0.15);
   padding: 16px 22px;
   font: inherit;
   font-size: 14px;
@@ -61,7 +69,7 @@
 .br .top .lang button.on { background: var(--br-yellow); color: var(--br-fg); }
 
 /* ─── Hero ─── */
-.br .hero { border-bottom: 3px solid var(--br-fg); background: #ebeae9; }
+.br .hero { border-bottom: 3px solid var(--br-fg); background: var(--br-bg); }
 .br .hero .top-row {
   display: flex;
   gap: 32px;
@@ -209,7 +217,7 @@
 .br .bio .body { display: grid; grid-template-columns: 1fr 1fr; gap: 32px; }
 .br .bio .body p { font-size: 22px; line-height: 1.45; font-weight: 500; }
 .br .bio .body p::first-letter {
-  color: var(--br-accent);
+  color: var(--br-fg);
   font-weight: 900;
   font-size: 1.4em;
   line-height: 0.8;
@@ -247,6 +255,7 @@
 .br .what .cell .v { font-size: 14px; line-height: 1.5; }
 
 /* ─── Process ─── */
+.br .process .sub { font-size: 22px; font-weight: 500; line-height: 1.4; max-width: 50ch; margin-bottom: 16px; }
 .br .process .steps { display: grid; grid-template-columns: 1fr; }
 .br .process .step {
   display: grid;
@@ -259,7 +268,7 @@
 }
 .br .process .step:last-child { border-bottom: 2px solid var(--br-fg); }
 .br .process .step:hover { background: var(--br-fg); color: var(--br-bg); }
-.br .process .step:hover .n { color: var(--br-accent); }
+.br .process .step:hover .n { color: var(--br-yellow); }
 .br .process .step .n { font-size: 96px; line-height: 0.85; font-weight: 900; letter-spacing: -0.04em; }
 .br .process .step .k { font-size: 22px; font-weight: 800; text-transform: uppercase; letter-spacing: -0.01em; padding-top: 12px; }
 .br .process .step .v { font-size: 16px; line-height: 1.55; padding-top: 14px; max-width: 60ch; }
@@ -277,7 +286,7 @@
 .br .exp .item .meta .period { background: var(--br-fg); color: var(--br-bg); padding: 4px 8px; display: inline-block; }
 .br .exp .item .meta .place { color: var(--br-mute); margin-top: 10px; display: block; }
 .br .exp .item .role { font-size: 32px; line-height: 1.05; font-weight: 800; letter-spacing: -0.02em; }
-.br .exp .item .company { font-size: 16px; color: var(--br-accent); font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; margin-top: 6px; }
+.br .exp .item .company { font-size: 16px; color: var(--br-fg); font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; margin-top: 6px; }
 .br .exp .item ul { list-style: none; padding: 0; margin: 20px 0 0; }
 .br .exp .item li { font-size: 16px; line-height: 1.5; padding: 12px 0; border-top: 1px dashed #888; }
 .br .exp .item li:first-child { border-top: 2px solid var(--br-fg); }
@@ -333,52 +342,64 @@
 .br .skl .langs .row .v { font-weight: 700; }
 
 /* ─── Contact ─── */
-.br .contact { padding: 88px 56px; background: var(--br-accent); color: var(--br-bg); border-bottom: 3px solid var(--br-fg); }
-.br .contact h2 { font-size: 140px; line-height: 0.85; font-weight: 900; letter-spacing: -0.04em; text-transform: uppercase; }
-.br .contact .sub { font-size: 22px; max-width: 50ch; margin: 24px 0 36px; font-weight: 500; }
-.br .contact .links { display: grid; grid-template-columns: repeat(2, 1fr); border: 3px solid var(--br-bg); }
-.br .contact .links a {
-  padding: 18px 22px;
-  border-right: 3px solid var(--br-bg);
-  border-bottom: 3px solid var(--br-bg);
+.br .contact {
+  padding: 48px 46px;
+  background: var(--br-yellow);
+  color: var(--br-fg);
+  border-bottom: 3px solid var(--br-fg);
   display: flex;
-  justify-content: space-between;
-  align-items: center;
+  flex-direction: column;
+  gap: 24px;
+}
+.br .contact .ctitle { font-size: 80px; font-weight: 900; letter-spacing: -0.04em; line-height: 100px; text-transform: uppercase; margin: 0; }
+.br .contact .ccontent { display: flex; flex-direction: column; gap: 16px; }
+.br .contact .csub { font-size: 18px; font-weight: 500; line-height: 24px; margin: 0; }
+.br .contact .cinfo { display: flex; flex-direction: column; gap: 24px; max-width: 608px; }
+.br .contact .crows { display: flex; flex-direction: column; gap: 16px; }
+.br .contact .crow {
+  display: inline-flex;
+  align-items: flex-end;
+  cursor: pointer;
+  width: fit-content;
   text-decoration: none;
-  color: var(--br-bg);
-  font-size: 17px;
-  font-weight: 600;
-  transition: background 0.15s, color 0.15s;
+  color: var(--br-fg);
+  background: none;
+  border: none;
+  padding: 0;
+  font: inherit;
+  text-align: left;
 }
-.br .contact .links a:nth-child(2n) { border-right: none; }
-.br .contact .links a:nth-last-child(-n+2) { border-bottom: none; }
-.br .contact .links a:hover { background: var(--br-bg); color: var(--br-accent); }
-.br .contact .links a .key {
+.br .contact .crow:hover .cval { text-decoration: underline; text-underline-offset: 3px; }
+.br .contact .ctext { display: flex; flex-direction: column; gap: 3px; align-items: flex-start; }
+.br .contact .clabel {
   font-family: var(--font-jetbrains-mono), ui-monospace, monospace;
-  font-size: 11px;
-  opacity: 0.7;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 20px;
   text-transform: uppercase;
-  letter-spacing: 0.14em;
-  display: block;
 }
-.br .contact .ctas { display: flex; gap: 16px; margin-top: 36px; }
-.br .contact .btn {
-  padding: 18px 28px;
-  border: 3px solid var(--br-bg);
-  background: var(--br-bg);
-  color: var(--br-accent);
-  font-family: inherit;
-  font-weight: 800;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
+.br .contact .cvalrow { display: flex; align-items: flex-start; gap: 16px; }
+.br .contact .cval { font-size: 16px; font-weight: 600; line-height: 24px; white-space: nowrap; }
+.br .contact .cicon { width: 20px; height: 20px; flex-shrink: 0; display: block; }
+.br .contact .ccopy { display: flex; align-items: center; gap: 8px; font-size: 16px; font-weight: 600; line-height: 24px; }
+.br .contact .cbtns { display: flex; gap: 16px; flex-wrap: wrap; }
+.br .contact .cbtn {
+  display: inline-flex;
+  align-items: flex-end;
+  gap: 8px;
+  padding: 10px 16px;
+  background: var(--br-fg);
+  color: var(--br-yellow);
   text-decoration: none;
   font-size: 14px;
-  cursor: pointer;
-  transition: background 0.15s, color 0.15s, border-color 0.15s;
-  display: inline-block;
+  font-weight: 600;
+  line-height: 20px;
+  font-family: inherit;
+  transition: color 0.15s;
+  white-space: nowrap;
 }
-.br .contact .btn.outline { background: transparent; color: var(--br-bg); }
-.br .contact .btn:hover { background: var(--br-fg); color: var(--br-bg); border-color: var(--br-fg); }
+.br .contact .cbtn:hover { color: #fff; }
+.br .contact .cbtn .cicon { color: inherit; }
 
 /* ─── Footer ─── */
 .br .foot {
@@ -389,4 +410,238 @@
   font-size: 11px;
   text-transform: uppercase;
   letter-spacing: 0.16em;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   RESPONSIVE — Desktop large (≥1440px)
+   More breathing room, slightly larger headlines.
+   ═══════════════════════════════════════════════════════════════ */
+@media (min-width: 1440px) {
+  .br .hero .top-row { padding: 64px 64px 0; gap: 48px; }
+  .br .hero .name { font-size: 96px; }
+  .br .hero .photo { width: 320px; height: 420px; }
+  .br .sec { padding: 80px 64px; }
+  .br .sec .head h2 { font-size: 72px; }
+  .br .skl { padding: 64px 64px; }
+  .br .contact { padding: 64px 64px; }
+  .br .contact .ctitle { font-size: 96px; line-height: 110px; }
+  .br .foot { padding: 28px 64px; }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   RESPONSIVE — Tablet (768px – 1023px)
+   2-column grids collapse, paddings shrink, sizes step down.
+   ═══════════════════════════════════════════════════════════════ */
+@media (max-width: 1023px) {
+  /* Topbar */
+  .br .top .mark { padding: 14px 20px; font-size: 13px; }
+  .br .top .nav a { padding: 14px 18px; font-size: 13px; }
+  .br .top .lang button { padding: 14px 18px; font-size: 13px; }
+
+  /* Hero */
+  .br .hero .top-row { padding: 40px 32px 0; gap: 24px; }
+  .br .hero .left { padding-top: 16px; }
+  .br .hero .subtitle { font-size: 28px; line-height: 1.4; }
+  .br .hero .name { font-size: 56px; }
+  .br .hero .role { font-size: 22px; }
+  .br .hero .intro p { font-size: 16px; }
+  .br .hero .photo { width: 220px; height: 290px; border-top-width: 16px; border-left-width: 16px; }
+  .br .hero .below .cell { padding: 24px; gap: 8px; }
+  .br .hero .below .k { font-size: 13px; }
+  .br .hero .below .v { font-size: 14px; }
+
+  /* Portband */
+  .br .portband .quote { padding: 40px 32px; }
+  .br .portband .quote h2 { font-size: 40px; }
+
+  /* Sec base */
+  .br .sec { padding: 48px 32px; }
+  .br .sec .head { margin-bottom: 28px; }
+  .br .sec .head h2 { font-size: 44px; }
+
+  /* Bio */
+  .br .bio .body { gap: 24px; }
+  .br .bio .body p { font-size: 18px; }
+  .br .bio .body .third { font-size: 16px; }
+
+  /* What — 2 cols */
+  .br .what .grid { grid-template-columns: repeat(2, 1fr); }
+  .br .what .cell { border-bottom: 3px solid var(--br-fg); min-height: 200px; }
+  .br .what .cell:nth-child(2n) { border-right: none; }
+  .br .what .cell:nth-child(2n+1) { border-right: 3px solid var(--br-fg); }
+  .br .what .cell:nth-last-child(-n+2):nth-child(2n+1),
+  .br .what .cell:last-child { border-bottom: none; }
+
+  /* Process */
+  .br .process .sub { font-size: 18px; }
+  .br .process .step { grid-template-columns: 120px 1fr 1.5fr; gap: 16px; padding: 24px 0; }
+  .br .process .step .n { font-size: 72px; }
+  .br .process .step .k { font-size: 18px; padding-top: 10px; }
+  .br .process .step .v { font-size: 15px; padding-top: 12px; }
+
+  /* Experience */
+  .br .exp .item { grid-template-columns: 180px 1fr; gap: 20px; padding: 28px 0; }
+  .br .exp .item .role { font-size: 26px; }
+  .br .exp .item li { font-size: 15px; }
+
+  /* Education */
+  .br .edu .grid { grid-template-columns: 1fr 1fr; }
+  .br .edu .item .deg { font-size: 24px; }
+
+  /* Skills */
+  .br .skl { padding: 40px 32px; gap: 24px; }
+  .br .skl .row { grid-template-columns: 120px 1fr; }
+
+  /* Contact */
+  .br .contact { padding: 40px 32px; }
+  .br .contact .ctitle { font-size: 64px; line-height: 76px; }
+  .br .contact .cinfo { max-width: 100%; }
+
+  /* Footer */
+  .br .foot { padding: 20px 32px; }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   RESPONSIVE — Mobile (≤767px)
+   Single-column layout, hero stacks, all grids collapse,
+   nowrap text allowed to wrap, large headlines clamp down.
+   ═══════════════════════════════════════════════════════════════ */
+@media (max-width: 767px) {
+  /* Topbar — stack */
+  .br .top { flex-direction: column; }
+  .br .top .lhs { flex-direction: column; width: 100%; }
+  .br .top .mark {
+    padding: 12px 16px;
+    border-right: none;
+    border-bottom: 2px solid rgba(235,234,233,0.2);
+    text-align: center;
+    font-size: 12px;
+  }
+  .br .top .nav { display: grid; grid-template-columns: repeat(4, 1fr); }
+  .br .top .nav a {
+    padding: 12px 6px;
+    font-size: 10px;
+    letter-spacing: 0.05em;
+    border-right: 0.5px solid rgba(235,234,233,0.15);
+    border-bottom: 2px solid rgba(235,234,233,0.2);
+    justify-content: center;
+  }
+  .br .top .nav a:last-child { border-right: none; }
+  .br .top .lang { display: grid; grid-template-columns: 1fr 1fr; width: 100%; }
+  .br .top .lang button {
+    padding: 12px;
+    border-left: none;
+    border-right: 0.5px solid rgba(235,234,233,0.15);
+    font-size: 12px;
+  }
+  .br .top .lang button:last-child { border-right: none; }
+
+  /* Hero — stack column (text first, photo below) */
+  .br .hero .top-row { flex-direction: column; padding: 24px 20px 0; gap: 24px; }
+  .br .hero .left { padding-top: 0; gap: 12px; }
+  .br .hero .subtitle { font-size: 18px; letter-spacing: 0.12em; line-height: 1.4; }
+  .br .hero .name { font-size: 48px; line-height: 1.05; }
+  .br .hero .desc { padding: 8px 0; gap: 10px; }
+  .br .hero .role { font-size: 18px; letter-spacing: 0.1em; }
+  .br .hero .intro p { font-size: 15px; }
+  .br .hero .photo {
+    width: 100%;
+    max-width: 260px;
+    height: auto;
+    aspect-ratio: 3 / 4;
+    border-top-width: 12px;
+    border-left-width: 12px;
+    align-self: flex-start;
+  }
+  .br .hero .below { grid-template-columns: 1fr; margin-top: 16px; }
+  .br .hero .below .cell {
+    padding: 20px;
+    border-right: none;
+    border-bottom: 3px solid var(--br-fg);
+  }
+  .br .hero .below .cell:last-child { border-bottom: none; }
+  .br .hero .below .k { font-size: 12px; letter-spacing: 0.14em; }
+  .br .hero .below .v { font-size: 14px; }
+  .br .hero .below .pill { font-size: 13px; padding: 6px 10px; }
+
+  /* Portband — stack */
+  .br .portband { grid-template-columns: 1fr; }
+  .br .portband .portrait { aspect-ratio: 4 / 3; border-right: none; border-bottom: 3px solid var(--br-fg); }
+  .br .portband .quote { padding: 32px 20px; gap: 24px; }
+  .br .portband .quote h2 { font-size: 28px; }
+
+  /* Sec base */
+  .br .sec { padding: 36px 20px; }
+  .br .sec .head { gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
+  .br .sec .head .n { font-size: 12px; }
+  .br .sec .head h2 { font-size: 32px; line-height: 1; }
+
+  /* Bio — 1 col */
+  .br .bio .body { grid-template-columns: 1fr; gap: 18px; }
+  .br .bio .body p { font-size: 16px; line-height: 1.5; }
+  .br .bio .body .third { grid-column: 1; font-size: 14px; }
+
+  /* What — 1 col */
+  .br .what .grid { grid-template-columns: 1fr; }
+  .br .what .cell {
+    border-right: none;
+    border-bottom: 3px solid var(--br-fg);
+    min-height: auto;
+    padding: 20px;
+  }
+  .br .what .cell:last-child { border-bottom: none; }
+  .br .what .cell .k { font-size: 18px; }
+  .br .what .cell .v { font-size: 14px; }
+
+  /* Process — stack rows */
+  .br .process .sub { font-size: 16px; }
+  .br .process .step { grid-template-columns: 1fr; gap: 6px; padding: 20px 0; }
+  .br .process .step .n { font-size: 52px; }
+  .br .process .step .k { font-size: 17px; padding-top: 0; }
+  .br .process .step .v { font-size: 14px; padding-top: 4px; }
+
+  /* Experience — stack */
+  .br .exp .item { grid-template-columns: 1fr; gap: 12px; padding: 24px 0; }
+  .br .exp .item .meta .period { font-size: 12px; }
+  .br .exp .item .meta .place { font-size: 12px; margin-top: 6px; }
+  .br .exp .item .role { font-size: 22px; }
+  .br .exp .item .company { font-size: 14px; }
+  .br .exp .item ul { margin-top: 14px; }
+  .br .exp .item li { font-size: 14px; padding: 10px 0; }
+
+  /* Education — 1 col */
+  .br .edu .grid { grid-template-columns: 1fr; }
+  .br .edu .item { border-right: none; border-bottom: 3px solid var(--br-fg); padding: 22px 20px; }
+  .br .edu .item:last-child { border-bottom: none; }
+  .br .edu .item .deg { font-size: 22px; }
+
+  /* Skills — 1 col */
+  .br .skl { grid-template-columns: 1fr; padding: 32px 20px; gap: 16px; }
+  .br .skl .col h3 { font-size: 11px; }
+  .br .skl .row { grid-template-columns: 100px 1fr; gap: 12px; padding: 10px 0; }
+  .br .skl .row .v { font-size: 14px; }
+
+  /* Contact */
+  .br .contact { padding: 32px 20px; gap: 20px; }
+  .br .contact .ctitle { font-size: 44px; line-height: 1.05; }
+  .br .contact .ccontent { gap: 14px; }
+  .br .contact .csub { font-size: 16px; line-height: 1.4; }
+  .br .contact .cinfo { max-width: 100%; gap: 20px; }
+  .br .contact .crow { width: 100%; }
+  .br .contact .ctext { width: 100%; }
+  .br .contact .cvalrow { flex-wrap: wrap; gap: 8px 12px; }
+  .br .contact .clabel { font-size: 12px; line-height: 16px; }
+  .br .contact .cval { font-size: 15px; line-height: 22px; white-space: normal; overflow-wrap: anywhere; }
+  .br .contact .ccopy { font-size: 13px; line-height: 18px; flex-wrap: wrap; gap: 6px; }
+  .br .contact .cbtns { gap: 12px; }
+  .br .contact .cbtn { font-size: 13px; padding: 10px 14px; }
+
+  /* Footer — stack */
+  .br .foot {
+    flex-direction: column;
+    gap: 8px;
+    padding: 18px 20px;
+    align-items: flex-start;
+    letter-spacing: 0.12em;
+  }
 }
