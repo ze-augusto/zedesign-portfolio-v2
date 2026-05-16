@@ -10,7 +10,7 @@ export interface LangItem { k: string; v: string; }
 export interface Translations {
   meta: { lang: string; other: string };
   nav: { home: string; projects: string; about: string; contact: string };
-  hero: { subtitle: string; nameShort: string; role: string; intro1: string; intro2pre: string; intro2em: string; location: string; available: string; contactCta: string; contactSuffix: string };
+  hero: { subtitle: string; nameShort: string; role: string; intro1: string; intro2pre: string; intro2em: string; intro3a: string; intro3b: string; intro3c: string; location: string; available: string; contactCta: string; contactSuffix: string };
   bio: { title: string; p1: string; p2: string; p3: string };
   what: { title: string; items: WhatItem[] };
   process: { title: string; subtitle: string; steps: ProcessStep[] };
@@ -32,6 +32,9 @@ export const PT: Translations = {
     intro1: 'Product Designer com formação em Engenharia de Produção.',
     intro2pre: 'Focado na construção de sistemas complexos, ',
     intro2em: 'do levantamento de requisitos ao handoff.',
+    intro3a: 'Atualmente, trabalho em projetos remodelando os sistemas financeiro e acadêmico da Universidade de Fortaleza, plataformas utilizadas por 20.000+ alunos e 1.000+ funcionários, traduzindo regras de negócio densas e requisitos técnicos estritos em jornadas de usuário eficientes e escaláveis.',
+    intro3b: 'Anteriormente, participei diretamente da criação da plataforma de gestão de licitações públicas da Procuradoria Geral do Estado do Ceará (PGE-CE), desde a definição de requisitos, prototipação, até o handoff para desenvolvedores e melhorias identificadas após implantações.',
+    intro3c: 'Ao focar 100% no processo de design de um produto, garanto o alinhamento de modelagem de processos, viabilidade técnica e interfaces claras e escaláveis.',
     location: 'Brasil — disponível para deslocamento e trabalhos remotos',
     available: 'Aberto para projetos freelance e cargos full-time',
     contactCta: 'Clique aqui',
@@ -145,6 +148,9 @@ export const EN: Translations = {
     intro1: 'Product Designer with an Industrial Engineering background.',
     intro2pre: 'Focused on building complex systems, ',
     intro2em: 'from requirements gathering to handoff.',
+    intro3a: 'Currently, I work on projects redesigning the financial and academic systems of Universidade de Fortaleza — platforms used by 20,000+ students and 1,000+ staff — translating dense business rules and strict technical requirements into efficient, scalable user journeys.',
+    intro3b: 'Previously, I was directly involved in building the public procurement management platform for the Procuradoria Geral do Estado do Ceará (PGE-CE), from requirements definition and prototyping through developer handoff and post-deployment improvements.',
+    intro3c: "By focusing 100% on a product's design process, I ensure alignment between process modeling, technical feasibility, and clear, scalable interfaces.",
     location: 'Brazil — available for remote work and travel',
     available: 'Open to freelance projects and full-time roles',
     contactCta: 'Click here',

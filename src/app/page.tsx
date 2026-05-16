@@ -59,30 +59,49 @@ export default function HomePage() {
             </div>
             <div className="desc">
               <p className="role">↳ {t.hero.role}</p>
-              <div className="intro">
-                <p>{t.hero.intro1}</p>
-                <p>{t.hero.intro2pre}<span className="em">{t.hero.intro2em}</span></p>
+              <div className="intro-group">
+                <div className="intro">
+                  <p>{t.hero.intro1}</p>
+                  <p>{t.hero.intro2pre}<span className="em">{t.hero.intro2em}</span></p>
+                </div>
+                <div className="intro-body">
+                  {lang === 'PT' ? (
+                    <>
+                      <p>Atualmente, trabalho em projetos remodelando os sistemas financeiro e acadêmico da <strong>Universidade de Fortaleza</strong>, plataformas utilizadas por <strong>20.000+ alunos e 1.000+ funcionários</strong>, traduzindo regras de negócio densas e requisitos técnicos estritos em <strong>jornadas de usuário eficientes e escaláveis</strong>.</p>
+                      <p>Anteriormente, participei diretamente da criação da plataforma de gestão de licitações públicas da <strong>Procuradoria Geral do Estado do Ceará (PGE-CE)</strong>, desde a definição de requisitos, prototipação, até o handoff para desenvolvedores e melhorias identificadas após implantações.</p>
+                      <p>Ao focar 100% no processo de design de um produto, garanto o alinhamento de <strong>modelagem de processos, viabilidade técnica e interfaces claras e escaláveis</strong>.</p>
+                    </>
+                  ) : (
+                    <>
+                      <p>Currently, I work on projects redesigning the financial and academic systems of <strong>Universidade de Fortaleza</strong> — platforms used by <strong>20,000+ students and 1,000+ staff</strong> — translating dense business rules and strict technical requirements into <strong>efficient, scalable user journeys</strong>.</p>
+                      <p>Previously, I was directly involved in building the public procurement management platform for the <strong>Procuradoria Geral do Estado do Ceará (PGE-CE)</strong>, from requirements definition and prototyping through developer handoff and post-deployment improvements.</p>
+                      <p>By focusing 100% on a product&apos;s design process, I ensure alignment between <strong>process modeling, technical feasibility, and clear, scalable interfaces</strong>.</p>
+                    </>
+                  )}
+                </div>
               </div>
             </div>
           </div>
-          <div className="photo">
-            <img src="/images/foto_ze.jpg" alt="Zé" />
-          </div>
-        </div>
-        <div className="below">
-          <div className="cell">
-            <span className="k">{lang === 'PT' ? 'Localização' : 'Location'}</span>
-            <p className="v">{t.hero.location}</p>
-          </div>
-          <div className="cell">
-            <span className="k">Status</span>
-            <span className="pill">● {t.hero.available}</span>
-          </div>
-          <div className="cell">
-            <span className="k">{lang === 'PT' ? 'Contato' : 'Contact'}</span>
-            <p className="v">
-              <a href="/contato">{t.hero.contactCta}</a>{t.hero.contactSuffix}
-            </p>
+          <div className="photo-col">
+            <div className="photo">
+              <img src="/images/foto_ze.jpg" alt="Zé" />
+            </div>
+            <div className="info-panel">
+              <div className="icell">
+                <span className="k">{lang === 'PT' ? 'Localização' : 'Location'}</span>
+                <p className="v">{t.hero.location}</p>
+              </div>
+              <div className="icell">
+                <span className="k">Status</span>
+                <span className="pill">● {t.hero.available}</span>
+              </div>
+              <div className="icell">
+                <span className="k">{lang === 'PT' ? 'Contato' : 'Contact'}</span>
+                <p className="v">
+                  <a href="/contato">{t.hero.contactCta}</a>{t.hero.contactSuffix}
+                </p>
+              </div>
+            </div>
           </div>
         </div>
       </section>
@@ -112,23 +131,10 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Bio */}
-      <section className="sec bio">
-        <div className="head">
-          <span className="n">02</span>
-          <h2>{t.bio.title}</h2>
-        </div>
-        <div className="body">
-          <p>{t.bio.p1}</p>
-          <p>{t.bio.p2}</p>
-          <p className="third">{t.bio.p3}</p>
-        </div>
-      </section>
-
       {/* What I do */}
       <section className="sec what">
         <div className="head">
-          <span className="n">03</span>
+          <span className="n">02</span>
           <h2>{t.what.title}</h2>
         </div>
         <div className="grid">
@@ -145,7 +151,7 @@ export default function HomePage() {
       {/* Process */}
       <section className="sec process">
         <div className="head">
-          <span className="n">04</span>
+          <span className="n">03</span>
           <h2>{t.process.title}</h2>
         </div>
         <p className="sub">{t.process.subtitle}</p>
@@ -163,7 +169,7 @@ export default function HomePage() {
       {/* Experience */}
       <section className="sec exp">
         <div className="head">
-          <span className="n">05</span>
+          <span className="n">04</span>
           <h2>{t.experience.title}</h2>
         </div>
         {t.experience.items.map((item, i) => (
@@ -188,7 +194,7 @@ export default function HomePage() {
       {/* Education */}
       <section className="sec edu">
         <div className="head">
-          <span className="n">06</span>
+          <span className="n">05</span>
           <h2>{t.education.title}</h2>
         </div>
         <div className="grid">
