@@ -67,7 +67,7 @@ export default function HomePage() {
                 <div className="intro-body">
                   {lang === 'PT' ? (
                     <>
-                      <p>Atualmente, trabalho em projetos remodelando os sistemas financeiro e acadêmico da <strong>Universidade de Fortaleza</strong>, plataformas utilizadas por <strong>20.000+ alunos e 1.000+ funcionários</strong>, traduzindo regras de negócio densas e requisitos técnicos estritos em <strong>jornadas de usuário eficientes e escaláveis</strong>.</p>
+                      <p>Especialista na evolução e transformação digital dos sistemas financeiro e acadêmico da <strong>Universidade de Fortaleza</strong>, plataformas utilizadas por <strong>20.000+ alunos e 1.000+ funcionários</strong> diariamente, traduzindo regras de negócio densas e requisitos técnicos estritos em <strong>jornadas de usuário eficientes e escaláveis</strong>.</p>
                       <p>Anteriormente, participei diretamente da criação da plataforma de gestão de licitações públicas da <strong>Procuradoria Geral do Estado do Ceará (PGE-CE)</strong>, desde a definição de requisitos, prototipação, até o handoff para desenvolvedores e melhorias identificadas após implantações.</p>
                       <p>Ao focar 100% no processo de design de um produto, garanto o alinhamento de <strong>modelagem de processos, viabilidade técnica e interfaces claras e escaláveis</strong>.</p>
                     </>
@@ -84,7 +84,7 @@ export default function HomePage() {
           </div>
           <div className="photo-col">
             <div className="photo">
-              <img src="/images/foto_ze.jpg" alt="Zé" />
+              <img src="/images/foto_ze2.png" alt="Zé" />
             </div>
             <div className="info-panel">
               <div className="icell">
@@ -93,7 +93,7 @@ export default function HomePage() {
               </div>
               <div className="icell">
                 <span className="k">Status</span>
-                <span className="pill">● {t.hero.available}</span>
+                <span className="pill"><span className="dot">●</span> {t.hero.available}</span>
               </div>
               <div className="icell">
                 <span className="k">{lang === 'PT' ? 'Contato' : 'Contact'}</span>
@@ -106,29 +106,25 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Portrait band */}
+      {/* Manifesto band */}
       <section className="portband">
-        <div className="portrait">
-          <span className="chip">[ portrait ] swap-with-photo</span>
-        </div>
-        <div className="quote">
-          <h2>
-            {lang === 'PT' ? (
-              <>
-                Não entrego <mark>telas</mark>.<br />
-                Entrego <mark>decisão validada</mark>.
-              </>
-            ) : (
-              <>
-                I don&rsquo;t ship <mark>screens</mark>.<br />
-                I ship <mark>validated decisions</mark>.
-              </>
-            )}
-          </h2>
-          <span className="credit">
-            — {lang === 'PT' ? 'Manifesto pessoal' : 'Personal manifesto'} — 2026
-          </span>
-        </div>
+        <h2>
+          {lang === 'PT' ? (
+            <>
+              Quando se foca no processo de design,<br />
+              <mark>a interface é só o resultado final.</mark><br />
+              Não existem telas sem <mark>requisitos, fluxos, estudos</mark><br />
+              e, principalmente, <mark>usuários.</mark>
+            </>
+          ) : (
+            <>
+              When you focus on the design process,<br />
+              <mark>the interface is just the end result.</mark><br />
+              There are no screens without <mark>requirements, flows, studies</mark><br />
+              and, most importantly, <mark>users.</mark>
+            </>
+          )}
+        </h2>
       </section>
 
       {/* What I do */}

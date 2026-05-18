@@ -115,7 +115,7 @@
 }
 .br .hero .intro p { font-size: 18px; font-weight: 500; line-height: 28px; margin: 0; }
 .br .hero .intro-group { display: flex; flex-direction: column; gap: 24px; }
-.br .hero .intro-body { max-width: 532px; display: flex; flex-direction: column; gap: 28px; }
+.br .hero .intro-body { max-width: 540px; display: flex; flex-direction: column; gap: 28px; }
 .br .hero .intro-body p { font-size: 18px; font-weight: 500; line-height: 28px; }
 .br .hero .intro .em { font-weight: 600; text-decoration: underline; text-underline-offset: 4px; }
 .br .hero .photo-col {
@@ -170,39 +170,39 @@
   font-size: 16px;
   font-weight: 600;
 }
+.br .hero .icell .pill .dot {
+  display: inline-block;
+  line-height: 1;
+  animation: br-pulse 1.8s ease-in-out infinite;
+}
+@keyframes br-pulse {
+  0%, 100% { opacity: 1; }
+  50%      { opacity: 0.25; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .br .hero .icell .pill .dot { animation: none; }
+}
 
-/* ─── Portrait band ─── */
+/* ─── Manifesto band ─── */
 .br .portband {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
+  background: var(--br-yellow);
+  padding: 64px 48px;
   border-bottom: 3px solid var(--br-fg);
 }
-.br .portband .portrait {
-  aspect-ratio: 4/3;
-  background: repeating-linear-gradient(45deg, #1a1a1a 0 1px, transparent 1px 8px), var(--br-fg);
-  display: flex;
-  align-items: flex-end;
-  padding: 20px;
-  border-right: 3px solid var(--br-fg);
-}
-.br .portband .portrait .chip {
-  font-family: var(--font-jetbrains-mono), ui-monospace, monospace;
-  font-size: 11px;
+.br .portband h2 {
+  font-size: 48px;
+  line-height: 64px;
+  font-weight: 800;
   color: var(--br-fg);
-  background: var(--br-yellow);
-  padding: 4px 8px;
-  border: 2px solid var(--br-fg);
+  letter-spacing: -0.02em;
 }
-.br .portband .quote {
-  padding: 56px 48px;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  background: var(--br-yellow);
+.br .portband h2 mark {
+  background: var(--br-fg);
+  color: var(--br-yellow);
+  padding: 0 8px;
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
 }
-.br .portband .quote h2 { font-size: 56px; line-height: 0.96; font-weight: 800; letter-spacing: -0.025em; }
-.br .portband .quote h2 mark { background: var(--br-fg); color: var(--br-yellow); padding: 0 6px; }
-.br .portband .quote .credit { font-size: 12px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--br-fg); }
 
 /* ─── Section base ─── */
 .br .sec { padding: 64px 56px; border-bottom: 3px solid var(--br-fg); }
@@ -440,8 +440,8 @@
   .br .hero .icell .v { font-size: 14px; }
 
   /* Portband */
-  .br .portband .quote { padding: 40px 32px; }
-  .br .portband .quote h2 { font-size: 40px; }
+  .br .portband { padding: 48px 32px; }
+  .br .portband h2 { font-size: 36px; line-height: 48px; }
 
   /* Sec base */
   .br .sec { padding: 48px 32px; }
@@ -527,7 +527,7 @@
   .br .hero .name { font-size: 48px; line-height: 1.05; }
   .br .hero .desc { padding: 8px 0; gap: 10px; }
   .br .hero .role { font-size: 18px; letter-spacing: 0.1em; }
-  .br .hero .intro p { font-size: 15px; }
+  .br .hero .intro p { font-size: 18px; }
   .br .hero .photo-col { width: 100%; }
   .br .hero .photo {
     width: 100%;
@@ -541,11 +541,10 @@
   .br .hero .icell .v { font-size: 14px; }
   .br .hero .icell .pill { font-size: 13px; padding: 6px 10px; }
 
-  /* Portband — stack */
-  .br .portband { grid-template-columns: 1fr; }
-  .br .portband .portrait { aspect-ratio: 4 / 3; border-right: none; border-bottom: 3px solid var(--br-fg); }
-  .br .portband .quote { padding: 32px 20px; gap: 24px; }
-  .br .portband .quote h2 { font-size: 28px; }
+  /* Portband */
+  .br .portband { padding: 32px 20px; }
+  .br .portband h2 { font-size: 24px; line-height: 34px; letter-spacing: -0.01em; }
+  .br .portband h2 mark { padding: 0 6px; }
 
   /* Sec base */
   .br .sec { padding: 36px 20px; }
