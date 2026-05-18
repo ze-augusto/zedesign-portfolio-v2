@@ -73,7 +73,7 @@ export default function HomePage() {
                     </>
                   ) : (
                     <>
-                      <p>Currently, I work on projects redesigning the financial and academic systems of <strong>Universidade de Fortaleza</strong> — platforms used by <strong>20,000+ students and 1,000+ staff</strong> — translating dense business rules and strict technical requirements into <strong>efficient, scalable user journeys</strong>.</p>
+                      <p>Specialist in the digital evolution and transformation of the financial and academic systems of <strong>Universidade de Fortaleza</strong>, platforms used by <strong>20,000+ students and 1,000+ staff</strong> daily, translating dense business rules and strict technical requirements into <strong>efficient, scalable user journeys</strong>.</p>
                       <p>Previously, I was directly involved in building the public procurement management platform for the <strong>Procuradoria Geral do Estado do Ceará (PGE-CE)</strong>, from requirements definition and prototyping through developer handoff and post-deployment improvements.</p>
                       <p>By focusing 100% on a product&apos;s design process, I ensure alignment between <strong>process modeling, technical feasibility, and clear, scalable interfaces</strong>.</p>
                     </>
