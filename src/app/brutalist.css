@@ -223,44 +223,22 @@
 }
 
 /* ─── What I do ─── */
-.br .what .grid { display: grid; grid-template-columns: repeat(4, 1fr); border: 3px solid var(--br-fg); }
+.br .what { background: var(--br-fg); color: var(--br-bg); }
+.br .what .head { margin-bottom: 56px; }
+.br .what .head h2 { color: var(--br-bg); }
+.br .what .grid { display: grid; grid-template-columns: repeat(3, 312px); justify-content: space-between; row-gap: 56px; }
 .br .what .cell {
-  padding: 24px 20px 28px;
-  border-right: 3px solid var(--br-fg);
-  min-height: 220px;
   display: flex;
   flex-direction: column;
-  transition: background 0.2s;
+  gap: 16px;
+  color: var(--br-bg);
+  transition: color 0.2s;
 }
-.br .what .cell:last-child { border-right: none; }
-.br .what .cell:hover { background: var(--br-yellow); }
-.br .what .cell .n {
-  font-family: var(--font-jetbrains-mono), ui-monospace, monospace;
-  font-size: 12px;
-  margin-bottom: auto;
-  color: var(--br-mute);
-}
-.br .what .cell .k { font-size: 22px; font-weight: 800; line-height: 1.05; margin: 16px 0 10px; text-transform: uppercase; letter-spacing: -0.01em; }
-.br .what .cell .v { font-size: 14px; line-height: 1.5; }
-
-/* ─── Process ─── */
-.br .process .sub { font-size: 22px; font-weight: 500; line-height: 1.4; max-width: 50ch; margin-bottom: 16px; }
-.br .process .steps { display: grid; grid-template-columns: 1fr; }
-.br .process .step {
-  display: grid;
-  grid-template-columns: 200px 1fr 2fr;
-  gap: 24px;
-  padding: 28px 0;
-  border-top: 2px solid var(--br-fg);
-  align-items: start;
-  transition: background 0.2s, color 0.2s;
-}
-.br .process .step:last-child { border-bottom: 2px solid var(--br-fg); }
-.br .process .step:hover { background: var(--br-fg); color: var(--br-bg); }
-.br .process .step:hover .n { color: var(--br-yellow); }
-.br .process .step .n { font-size: 96px; line-height: 0.85; font-weight: 900; letter-spacing: -0.04em; }
-.br .process .step .k { font-size: 22px; font-weight: 800; text-transform: uppercase; letter-spacing: -0.01em; padding-top: 12px; }
-.br .process .step .v { font-size: 16px; line-height: 1.55; padding-top: 14px; max-width: 60ch; }
+.br .what .cell:hover { color: var(--br-yellow); }
+.br .what .cell .k { font-size: 20px; font-weight: 800; line-height: 1.15; letter-spacing: -0.01em; }
+.br .what .ico { width: 72px; height: 72px; display: block; }
+.br .what .ico svg { width: 100%; height: 100%; display: block; }
+.br .what .cell .v { font-size: 16px; line-height: 24px; font-weight: 400; }
 
 /* ─── Experience ─── */
 .br .exp .item {
@@ -449,19 +427,8 @@
   .br .sec .head h2 { font-size: 44px; }
 
   /* What — 2 cols */
-  .br .what .grid { grid-template-columns: repeat(2, 1fr); }
-  .br .what .cell { border-bottom: 3px solid var(--br-fg); min-height: 200px; }
-  .br .what .cell:nth-child(2n) { border-right: none; }
-  .br .what .cell:nth-child(2n+1) { border-right: 3px solid var(--br-fg); }
-  .br .what .cell:nth-last-child(-n+2):nth-child(2n+1),
-  .br .what .cell:last-child { border-bottom: none; }
-
-  /* Process */
-  .br .process .sub { font-size: 18px; }
-  .br .process .step { grid-template-columns: 120px 1fr 1.5fr; gap: 16px; padding: 24px 0; }
-  .br .process .step .n { font-size: 72px; }
-  .br .process .step .k { font-size: 18px; padding-top: 10px; }
-  .br .process .step .v { font-size: 15px; padding-top: 12px; }
+  .br .what .head { margin-bottom: 48px; }
+  .br .what .grid { grid-template-columns: repeat(2, 1fr); gap: 40px 32px; }
 
   /* Experience */
   .br .exp .item { grid-template-columns: 180px 1fr; gap: 20px; padding: 28px 0; }
@@ -553,23 +520,9 @@
   .br .sec .head h2 { font-size: 32px; line-height: 1; }
 
   /* What — 1 col */
-  .br .what .grid { grid-template-columns: 1fr; }
-  .br .what .cell {
-    border-right: none;
-    border-bottom: 3px solid var(--br-fg);
-    min-height: auto;
-    padding: 20px;
-  }
-  .br .what .cell:last-child { border-bottom: none; }
+  .br .what .head { margin-bottom: 32px; }
+  .br .what .grid { grid-template-columns: 1fr; gap: 36px; }
   .br .what .cell .k { font-size: 18px; }
-  .br .what .cell .v { font-size: 14px; }
-
-  /* Process — stack rows */
-  .br .process .sub { font-size: 16px; }
-  .br .process .step { grid-template-columns: 1fr; gap: 6px; padding: 20px 0; }
-  .br .process .step .n { font-size: 52px; }
-  .br .process .step .k { font-size: 17px; padding-top: 0; }
-  .br .process .step .v { font-size: 14px; padding-top: 4px; }
 
   /* Experience — stack */
   .br .exp .item { grid-template-columns: 1fr; gap: 12px; padding: 24px 0; }

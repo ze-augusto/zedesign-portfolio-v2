@@ -47,12 +47,14 @@ export const PT: Translations = {
     p3: 'Minha formação em Engenharia de Produção me dá um repertório de pensamento sistêmico — modelagem de processos, gargalos, indicadores — que aplico em decisões de produto todos os dias.',
   },
   what: {
-    title: 'O que faço',
+    title: 'Como trabalho',
     items: [
-      { k: 'Sistemas complexos', v: 'Ferramentas internas, plataformas B2G e B2B onde regra de negócio é metade do desafio.' },
-      { k: 'Pesquisa com usuário', v: 'Entrevistas, testes de usabilidade e observação direta com equipes operacionais.' },
-      { k: 'Design de ponta a ponta', v: 'Requisitos → fluxos → wireframes → hi-fi → handoff → QA de microinterações.' },
-      { k: 'Design systems', v: 'Componentes e padrões que mantêm consistência entre interfaces de produto.' },
+      { k: 'Requisitos', v: 'Ao alinhar as dores dos usuários com as metas dos stakeholders, traduzo regras de negócio complexas em requisitos claros antes de iniciar a ideação.' },
+      { k: 'Fluxogramas', v: 'Ao conectar jornadas de usuário com blueprints de serviço, mapeio como as possíveis ações na tela refletem no sistema como um todo.' },
+      { k: 'Wireframes', v: 'Ao criar estruturas de média fidelidade, valido principalmente a hierarquia de componentes e o escopo prático da solução diretamente com a equipe.' },
+      { k: 'Alta fidelidade e Prototipação', v: 'Ao modelar interfaces responsivas e nativas, construo protótipos interativos que simulam com precisão o comportamento real do produto.' },
+      { k: 'Testes de usabilidade', v: 'Ao aplicar testes qualitativos e quantitativos com usuários reais, identifico gargalos na jornada e refino a usabilidade do fluxo com base em dados de comportamento.' },
+      { k: 'Validação com devs', v: 'Ao realizar o handoff para a equipe dev, reviso a lógica dos componentes e as regras de banco de dados para mitigar riscos e garantir a viabilidade do código.' },
     ],
   },
   process: {
@@ -163,12 +165,14 @@ export const EN: Translations = {
     p3: "My Industrial Engineering background gives me a systems-thinking toolkit — process modeling, bottlenecks, indicators — that I apply to product decisions every day.",
   },
   what: {
-    title: 'What I do',
+    title: 'How I work',
     items: [
-      { k: 'Complex systems', v: 'Internal tools, B2G and B2B platforms where business rules are half the challenge.' },
-      { k: 'User research', v: 'Interviews, usability tests and direct observation with operational teams.' },
-      { k: 'End-to-end design', v: 'Requirements → flows → wireframes → hi-fi → handoff → microinteraction QA.' },
-      { k: 'Design systems', v: 'Components and patterns that keep product interfaces consistent.' },
+      { k: 'Requirements', v: 'By aligning user pains with stakeholder goals, I translate complex business rules into clear requirements before starting ideation.' },
+      { k: 'Flowcharts', v: 'By connecting user journeys with service blueprints, I map how possible on-screen actions ripple through the system as a whole.' },
+      { k: 'Wireframes', v: 'By building mid-fidelity structures, I mainly validate component hierarchy and the practical scope of the solution directly with the team.' },
+      { k: 'Hi-fi & prototyping', v: 'By modeling responsive and native interfaces, I build interactive prototypes that accurately simulate the product\'s real behavior.' },
+      { k: 'Usability testing', v: 'By running qualitative and quantitative tests with real users, I spot journey bottlenecks and refine flow usability based on behavioral data.' },
+      { k: 'Dev validation', v: 'During handoff to the dev team, I review component logic and database rules to mitigate risks and ensure code feasibility.' },
     ],
   },
   process: {
