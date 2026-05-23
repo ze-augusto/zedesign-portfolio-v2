@@ -240,6 +240,80 @@
 .br .what .ico svg { width: 100%; height: 100%; display: block; }
 .br .what .cell .v { font-size: 16px; line-height: 24px; font-weight: 400; }
 
+/* ─── Work — infinite marquee ─── */
+.br .work {
+  background: var(--br-bg);
+  border-bottom: 3px solid var(--br-fg);
+  padding: 64px 0;
+  overflow: hidden;
+}
+.br .work .head { padding: 0 56px; margin-bottom: 56px; }
+.br .work .head h2 {
+  font-size: 64px;
+  line-height: 0.95;
+  font-weight: 900;
+  letter-spacing: -0.03em;
+  text-transform: uppercase;
+}
+.br .work .marquee { overflow: hidden; }
+.br .work .track {
+  --card-w: 525px;
+  --card-h: 410px;
+  --gap: 24px;
+  --count: 7;
+  --dur: 60s;
+  display: flex;
+  gap: var(--gap);
+  width: max-content;
+  padding-left: var(--gap);
+  animation: br-marquee var(--dur) linear infinite;
+  will-change: transform;
+}
+.br .work .track:hover { animation-play-state: paused; }
+.br .work .card {
+  width: var(--card-w);
+  height: var(--card-h);
+  flex-shrink: 0;
+  overflow: hidden;
+  background: var(--br-fg);
+}
+.br .work .card img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: top center;
+  display: block;
+  user-select: none;
+  -webkit-user-drag: none;
+}
+.br .work .marquee + .marquee { margin-top: 56px; }
+.br .work .logos {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  opacity: 0.6;
+  padding: 0 56px;
+  margin-top: 96px;
+  gap: 24px;
+}
+.br .work .logos img { display: block; width: auto; flex-shrink: 1; min-width: 0; object-fit: contain; }
+.br .work .logos .lg-tall { height: 56px; }
+.br .work .logos .lg-short { height: 40px; }
+.br .work .track.mobile {
+  --card-w: 170px;
+  --card-h: 372px;
+  --count: 11;
+  --dur: 70s;
+}
+.br .work .track.reverse { animation-direction: reverse; }
+@keyframes br-marquee {
+  from { transform: translate3d(0, 0, 0); }
+  to   { transform: translate3d(calc(-1 * var(--count) * (var(--card-w) + var(--gap))), 0, 0); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .br .work .track { animation: none; }
+}
+
 /* ─── Experience ─── */
 .br .exp .item {
   display: grid;
@@ -430,6 +504,17 @@
   .br .what .head { margin-bottom: 48px; }
   .br .what .grid { grid-template-columns: repeat(2, 1fr); gap: 40px 32px; }
 
+  /* Work marquee */
+  .br .work { padding: 48px 0; }
+  .br .work .head { padding: 0 32px; margin-bottom: 40px; }
+  .br .work .head h2 { font-size: 44px; }
+  .br .work .track { --card-w: 360px; --card-h: 281px; --dur: 50s; }
+  .br .work .track.mobile { --card-w: 130px; --card-h: 284px; --dur: 60s; }
+  .br .work .marquee + .marquee { margin-top: 40px; }
+  .br .work .logos { padding: 0 32px; margin-top: 64px; gap: 16px; }
+  .br .work .logos .lg-tall { height: 44px; }
+  .br .work .logos .lg-short { height: 32px; }
+
   /* Experience */
   .br .exp .item { grid-template-columns: 180px 1fr; gap: 20px; padding: 28px 0; }
   .br .exp .item .role { font-size: 26px; }
@@ -523,6 +608,30 @@
   .br .what .head { margin-bottom: 32px; }
   .br .what .grid { grid-template-columns: 1fr; gap: 36px; }
   .br .what .cell .k { font-size: 18px; }
+
+  /* Work marquee */
+  .br .work { padding: 36px 0; }
+  .br .work .head { padding: 0 20px; margin-bottom: 28px; }
+  .br .work .head h2 { font-size: 32px; line-height: 1; }
+  .br .work .track { --card-w: 260px; --card-h: 203px; --gap: 16px; --dur: 40s; }
+  .br .work .track.mobile { --card-w: 100px; --card-h: 219px; --gap: 12px; --dur: 50s; }
+  .br .work .marquee + .marquee { margin-top: 28px; }
+  .br .work .logos {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: auto auto;
+    grid-auto-flow: column;
+    align-items: center;
+    padding: 0 20px;
+    margin-top: 40px;
+    gap: 28px 24px;
+  }
+  .br .work .logos img { max-width: 100%; }
+  .br .work .logos img:nth-child(-n+2) { justify-self: start; }
+  .br .work .logos img:nth-child(n+3) { justify-self: end; }
+  .br .work .logos .lg-tall { height: 48px; }
+  .br .work .logos img:nth-child(2) { height: 36px; width: auto; max-width: none; }
+  .br .work .logos .lg-short { height: 20px; }
 
   /* Experience — stack */
   .br .exp .item { grid-template-columns: 1fr; gap: 12px; padding: 24px 0; }

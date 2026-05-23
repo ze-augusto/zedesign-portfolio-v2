@@ -127,7 +127,7 @@ export default function HomePage() {
                     </>
                   ) : (
                     <>
-                      <p>Specialist in the digital evolution and transformation of the financial and academic systems of <strong>Universidade de Fortaleza</strong>, platforms used by <strong>20,000+ students and 1,000+ staff</strong> daily, translating dense business rules and strict technical requirements into <strong>efficient, scalable user journeys</strong>.</p>
+                      <p>Specialist in the digital evolution and transformation of the financial and academic systems of <strong>University of Fortaleza</strong>, platforms used by <strong>20,000+ students and 1,000+ staff</strong> daily, translating dense business rules and strict technical requirements into <strong>efficient, scalable user journeys</strong>.</p>
                       <p>Previously, I was directly involved in building the public procurement management platform for the <strong>Procuradoria Geral do Estado do Ceará (PGE-CE)</strong>, from requirements definition and prototyping through developer handoff and post-deployment improvements.</p>
                       <p>By focusing 100% on a product&apos;s design process, I ensure alignment between <strong>process modeling, technical feasibility, and clear, scalable interfaces</strong>.</p>
                     </>
@@ -146,7 +146,7 @@ export default function HomePage() {
                 <p className="v">{t.hero.location}</p>
               </div>
               <div className="icell">
-                <span className="k">Status</span>
+                <span className="k">{lang === 'PT' ? 'Status atual' : 'Current status'}</span>
                 <span className="pill"><span className="dot">●</span> {t.hero.available}</span>
               </div>
               <div className="icell">
@@ -194,6 +194,51 @@ export default function HomePage() {
               <p className="v">{item.v}</p>
             </div>
           ))}
+        </div>
+      </section>
+
+      {/* Work — infinite marquee */}
+      <section className="work">
+        <div className="head">
+          <h2>{lang === 'PT' ? 'Um pouco do que faço' : 'A bit of what I do'}</h2>
+        </div>
+        <div className="marquee">
+          <div className="track">
+            {[0, 1].flatMap((copy) =>
+              [1, 2, 3, 4, 5, 6, 7].map((n) => (
+                <div className="card" key={`${copy}-${n}`} aria-hidden={copy === 1}>
+                  <img
+                    src={`/images/prototipo0${n}.png`}
+                    alt={copy === 0 ? `Protótipo ${n}` : ''}
+                    loading="lazy"
+                    draggable={false}
+                  />
+                </div>
+              ))
+            )}
+          </div>
+        </div>
+        <div className="marquee">
+          <div className="track mobile reverse">
+            {[0, 1].flatMap((copy) =>
+              [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11].map((n) => (
+                <div className="card mobile" key={`m-${copy}-${n}`} aria-hidden={copy === 1}>
+                  <img
+                    src={`/images/mobile${String(n).padStart(2, '0')}.png`}
+                    alt={copy === 0 ? `Protótipo mobile ${n}` : ''}
+                    loading="lazy"
+                    draggable={false}
+                  />
+                </div>
+              ))
+            )}
+          </div>
+        </div>
+        <div className="logos" aria-label={lang === 'PT' ? 'Empresas e instituições' : 'Companies and institutions'}>
+          <img src="/images/logo01.png" alt="" className="lg-tall" loading="lazy" draggable={false} />
+          <img src="/images/logo02.png" alt="" className="lg-tall" loading="lazy" draggable={false} />
+          <img src="/images/logo03.png" alt="" className="lg-short" loading="lazy" draggable={false} />
+          <img src="/images/logo04.png" alt="" className="lg-short" loading="lazy" draggable={false} />
         </div>
       </section>
 
