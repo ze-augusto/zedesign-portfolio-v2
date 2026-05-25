@@ -308,16 +308,28 @@ export default function HomePage() {
           <div className="track docs">
             {[0, 1].map((copy) => (
               <div className="copy" key={`d-c-${copy}`} aria-hidden={copy === 1}>
-                {[1, 2, 3, 4, 5, 6, 7].map((n) => (
-                  <div className="card doc" key={n}>
-                    <img
-                      src={`/images/documentacao0${n}.png`}
-                      alt={copy === 0 ? `Documentação ${n}` : ''}
-                      loading="lazy"
-                      draggable={false}
-                    />
-                  </div>
-                ))}
+                {([
+                  { w: 1134, h: 1020 },
+                  { w: 613, h: 1021 },
+                  { w: 914, h: 1021 },
+                  { w: 801, h: 1020 },
+                  { w: 612, h: 1020 },
+                  { w: 613, h: 1021 },
+                  { w: 1041, h: 1021 },
+                ] as const).map((d, i) => {
+                  const n = i + 1;
+                  return (
+                    <div className="card doc" key={n}>
+                      <img
+                        src={`/images/documentacao0${n}.png`}
+                        alt={copy === 0 ? `Documentação ${n}` : ''}
+                        width={d.w}
+                        height={d.h}
+                        draggable={false}
+                      />
+                    </div>
+                  );
+                })}
               </div>
             ))}
           </div>
