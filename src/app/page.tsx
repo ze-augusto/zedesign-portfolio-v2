@@ -63,6 +63,7 @@ const WHAT_ICONS = [
 export default function HomePage() {
   const { lang, t, toggle } = useI18n('PT');
   const [copied, setCopied] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
 
   const handleCopyEmail = async () => {
     await navigator.clipboard.writeText(CONTACT.email);
@@ -70,17 +71,46 @@ export default function HomePage() {
     setTimeout(() => setCopied(false), 3000);
   };
 
+  const scrollToContact = (e: React.MouseEvent<HTMLAnchorElement>) => {
+    e.preventDefault();
+    const el = document.getElementById('contact');
+    if (!el) return;
+    const offset = 56;
+    const start = window.scrollY;
+    const target = el.getBoundingClientRect().top + start - offset;
+    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (reduce) { window.scrollTo(0, target); return; }
+    const dist = target - start;
+    const dur = 1400;
+    const ease = (t: number) => t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+    const t0 = performance.now();
+    const step = (now: number) => {
+      const p = Math.min((now - t0) / dur, 1);
+      window.scrollTo(0, start + dist * ease(p));
+      if (p < 1) requestAnimationFrame(step);
+    };
+    requestAnimationFrame(step);
+  };
+
   return (
     <div className="br">
       {/* Topbar */}
       <header className="top">
+        <button
+          className="burger"
+          onClick={() => setMenuOpen(true)}
+          aria-label={lang === 'PT' ? 'Abrir menu' : 'Open menu'}
+          aria-expanded={menuOpen}
+        >
+          <svg viewBox="0 0 20 20" aria-hidden="true">
+            <path d="M2 5h16M2 10h16M2 15h16" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+          </svg>
+        </button>
         <div className="lhs">
-          <div className="mark">ZE - PRODUCT DESIGNER</div>
+          <div className="mark">ZE — PRODUCT DESIGNER</div>
           <nav className="nav">
             <Link href="/" className="on">{t.nav.home}</Link>
-            <Link href="/projetos">{t.nav.projects}</Link>
             <Link href="/sobre">{t.nav.about}</Link>
-            <Link href="/contato">{t.nav.contact}</Link>
           </nav>
         </div>
         <div className="lang">
@@ -90,6 +120,13 @@ export default function HomePage() {
             aria-pressed={lang === 'PT'}
             aria-label="Mudar para português"
           >
+            <span className="flag" aria-hidden="true">
+              <svg viewBox="0 0 20 14" xmlns="http://www.w3.org/2000/svg">
+                <rect width="20" height="14" fill="#009C3B" />
+                <polygon points="10,1.4 18.6,7 10,12.6 1.4,7" fill="#FFDF00" />
+                <circle cx="10" cy="7" r="2.8" fill="#002776" />
+              </svg>
+            </span>
             PT
           </button>
           <button
@@ -98,10 +135,43 @@ export default function HomePage() {
             aria-pressed={lang === 'EN'}
             aria-label="Switch to English"
           >
+            <span className="flag" aria-hidden="true">
+              <svg viewBox="0 0 20 15" xmlns="http://www.w3.org/2000/svg">
+                <rect width="20" height="15" fill="#012169" />
+                <path d="M0 0 L20 15 M20 0 L0 15" stroke="#FFFFFF" strokeWidth="3" />
+                <path d="M0 0 L20 15 M20 0 L0 15" stroke="#C8102E" strokeWidth="1.5" />
+                <path d="M10 0 V15 M0 7.5 H20" stroke="#FFFFFF" strokeWidth="5" />
+                <path d="M10 0 V15 M0 7.5 H20" stroke="#C8102E" strokeWidth="2.5" />
+              </svg>
+            </span>
             EN
           </button>
         </div>
       </header>
+
+      {/* Mobile drawer */}
+      <div
+        className={`drawer-bd${menuOpen ? ' open' : ''}`}
+        onClick={() => setMenuOpen(false)}
+        aria-hidden="true"
+      />
+      <aside
+        className={`drawer${menuOpen ? ' open' : ''}`}
+        aria-hidden={!menuOpen}
+        aria-label={lang === 'PT' ? 'Navegação' : 'Navigation'}
+      >
+        <button
+          className="drawer-close"
+          onClick={() => setMenuOpen(false)}
+          aria-label={lang === 'PT' ? 'Fechar menu' : 'Close menu'}
+        >
+          ×
+        </button>
+        <nav>
+          <Link href="/" onClick={() => setMenuOpen(false)}>{t.nav.home}</Link>
+          <Link href="/sobre" onClick={() => setMenuOpen(false)}>{t.nav.about}</Link>
+        </nav>
+      </aside>
 
       {/* Hero */}
       <section className="hero">
@@ -152,7 +222,7 @@ export default function HomePage() {
               <div className="icell">
                 <span className="k">{lang === 'PT' ? 'Contato' : 'Contact'}</span>
                 <p className="v">
-                  <a href="/contato">{t.hero.contactCta}</a>{t.hero.contactSuffix}
+                  <a href="#contact" onClick={scrollToContact}>{t.hero.contactCta}</a>{t.hero.contactSuffix}
                 </p>
               </div>
             </div>
@@ -234,6 +304,24 @@ export default function HomePage() {
             )}
           </div>
         </div>
+        <div className="marquee">
+          <div className="track docs">
+            {[0, 1].map((copy) => (
+              <div className="copy" key={`d-c-${copy}`} aria-hidden={copy === 1}>
+                {[1, 2, 3, 4, 5, 6, 7].map((n) => (
+                  <div className="card doc" key={n}>
+                    <img
+                      src={`/images/documentacao0${n}.png`}
+                      alt={copy === 0 ? `Documentação ${n}` : ''}
+                      loading="lazy"
+                      draggable={false}
+                    />
+                  </div>
+                ))}
+              </div>
+            ))}
+          </div>
+        </div>
         <div className="logos" aria-label={lang === 'PT' ? 'Empresas e instituições' : 'Companies and institutions'}>
           <img src="/images/logo01.png" alt="" className="lg-tall" loading="lazy" draggable={false} />
           <img src="/images/logo02.png" alt="" className="lg-tall" loading="lazy" draggable={false} />
@@ -242,73 +330,8 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Experience */}
-      <section className="sec exp">
-        <div className="head">
-          <span className="n">03</span>
-          <h2>{t.experience.title}</h2>
-        </div>
-        {t.experience.items.map((item, i) => (
-          <div className="item" key={i}>
-            <div className="meta">
-              <span className="period">{item.period}</span>
-              <span className="place">{item.place}</span>
-            </div>
-            <div>
-              <h3 className="role">{item.role}</h3>
-              <p className="company">{item.company}</p>
-              <ul>
-                {item.bullets.map((bullet, j) => (
-                  <li key={j}>— {bullet}</li>
-                ))}
-              </ul>
-            </div>
-          </div>
-        ))}
-      </section>
-
-      {/* Education */}
-      <section className="sec edu">
-        <div className="head">
-          <span className="n">04</span>
-          <h2>{t.education.title}</h2>
-        </div>
-        <div className="grid">
-          {t.education.items.map((item, i) => (
-            <div className="item" key={i}>
-              <span className="period">{item.period}</span>
-              <h4 className="deg">{item.degree}</h4>
-              <p className="school">{item.school}</p>
-              <p className="kind">{item.kind}</p>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* Skills + Languages */}
-      <section className="skl">
-        <div className="col">
-          <h3>{t.skills.title}</h3>
-          {t.skills.groups.map((group, i) => (
-            <div className="row" key={i}>
-              <span className="k">{group.k}</span>
-              <span className="v">{group.v}</span>
-            </div>
-          ))}
-        </div>
-        <div className="col langs">
-          <h3>{t.langs.title}</h3>
-          {t.langs.items.map((langItem, i) => (
-            <div className="row" key={i}>
-              <span className="k">{langItem.k}</span>
-              <span className="v">{langItem.v}</span>
-            </div>
-          ))}
-        </div>
-      </section>
-
       {/* Contact */}
-      <section className="contact">
+      <section className="contact" id="contact">
         <h2 className="ctitle">
           {lang === 'PT' ? <>VAMOS<br />CONVERSAR?</> : <>LET&rsquo;S<br />TALK?</>}
         </h2>

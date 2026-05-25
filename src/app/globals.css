@@ -9,3 +9,11 @@
   --color-brand:  #F5E22A;   /* brand yellow */
   --color-muted:  #5B5B5B;   /* secondary / subdued text */
 }
+
+html {
+  scroll-behavior: smooth;
+  scroll-padding-top: 56px;
+}
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+}
