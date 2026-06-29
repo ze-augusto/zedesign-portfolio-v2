@@ -212,11 +212,13 @@
   width: 420px;
   height: 640px;
   position: relative;
+  overflow: visible;
 }
 .br .hero .lanyard-canvas {
   position: absolute;
-  inset: 0;
-  width: 100% !important;
+  top: 0;
+  left: -30%;
+  width: 160% !important;
   height: 100% !important;
   display: block;
   pointer-events: none;

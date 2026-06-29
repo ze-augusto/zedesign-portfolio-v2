@@ -4,15 +4,6 @@ import * as THREE from 'three';
 import { Suspense, useEffect, useRef, useState } from 'react';
 import { Canvas, extend, useFrame, useThree } from '@react-three/fiber';
 import { useTexture } from '@react-three/drei';
-import {
-  BallCollider,
-  CuboidCollider,
-  Physics,
-  RigidBody,
-  useRopeJoint,
-  useSphericalJoint,
-  type RapierRigidBody,
-} from '@react-three/rapier';
 import { MeshLineGeometry, MeshLineMaterial } from 'meshline';
 
 extend({ MeshLineGeometry, MeshLineMaterial });
@@ -25,46 +16,42 @@ declare module '@react-three/fiber' {
   }
 }
 
-const CARD_W = 1.5;
-const CARD_H = (CARD_W * 1752) / 1116; // texture aspect
+// Card matches Figma node 103:11096 (372 x 584); texture is the same aspect.
+const CARD_W = 3.2;
+const CARD_H = (CARD_W * 1752) / 1116; // ~5.02
+
+// Pivot sits just above the top edge so the cord enters from the top of frame.
+const PIVOT = new THREE.Vector3(0, 3.3, 0);
+const ROPE_LEN = PIVOT.y; // pivot -> card center at rest (card centered, y=0)
+const DURATION = 2; // seconds; animation ends after this
 
 export default function Lanyard() {
   return (
     <Canvas
       className="lanyard-canvas"
       dpr={[1, 2]}
-      camera={{ position: [0, 0, 13], fov: 25 }}
+      camera={{ position: [0, 0, 13.3], fov: 25 }}
       gl={{ alpha: true, antialias: true }}
     >
       <ambientLight intensity={1.2} />
       <Suspense fallback={null}>
-        <Physics gravity={[0, -30, 0]} timeStep={1 / 60} interpolate>
-          <Band />
-        </Physics>
+        <Band />
       </Suspense>
     </Canvas>
   );
 }
 
 function Band() {
-  const fixed = useRef<RapierRigidBody>(null!);
-  const j1 = useRef<RapierRigidBody>(null!);
-  const j2 = useRef<RapierRigidBody>(null!);
-  const j3 = useRef<RapierRigidBody>(null!);
-  const card = useRef<RapierRigidBody>(null!);
-
+  const card = useRef<THREE.Group>(null);
   const band = useRef<THREE.Mesh>(null);
   const { width, height } = useThree((s) => s.size);
 
   const texture = useTexture('/images/id_card.png');
-  const bandTex = useTexture('/images/band.png');
 
   useEffect(() => {
     texture.colorSpace = THREE.SRGBColorSpace;
     texture.anisotropy = 16;
-    bandTex.colorSpace = THREE.SRGBColorSpace;
-    bandTex.wrapS = bandTex.wrapT = THREE.RepeatWrapping;
-  }, [texture, bandTex]);
+  }, [texture]);
 
   const [curve] = useState(
     () =>
@@ -72,94 +59,67 @@ function Band() {
         new THREE.Vector3(),
         new THREE.Vector3(),
         new THREE.Vector3(),
-        new THREE.Vector3(),
       ]),
   );
 
-  // Rope chain: fixed -> j1 -> j2 -> j3, then card hangs from j3.
-  useRopeJoint(fixed, j1, [[0, 0, 0], [0, 0, 0], 1]);
-  useRopeJoint(j1, j2, [[0, 0, 0], [0, 0, 0], 1]);
-  useRopeJoint(j2, j3, [[0, 0, 0], [0, 0, 0], 1]);
-  useSphericalJoint(j3, card, [[0, 0, 0], [0, CARD_H / 2, 0]]);
+  const start = useRef<number | null>(null);
 
-  const v1 = useRef(new THREE.Vector3());
-  const v2 = useRef(new THREE.Vector3());
+  const apply = (theta: number) => {
+    if (!card.current) return;
 
-  useFrame(() => {
-    if (!fixed.current || !j1.current || !j2.current || !j3.current || !card.current) return;
+    // Card center swings on a pendulum hanging from PIVOT.
+    const cx = PIVOT.x + ROPE_LEN * Math.sin(theta);
+    const cy = PIVOT.y - ROPE_LEN * Math.cos(theta);
+    card.current.position.set(cx, cy, 0);
+    card.current.rotation.z = theta;
 
-    // Smooth the two inner joints so the band reads as a flexible cord.
-    [j1, j2].forEach((ref) => {
-      const r = ref.current!;
-      const lerped = (r as RapierRigidBody & { lerped?: THREE.Vector3 }).lerped;
-      const next = v1.current.copy(r.translation() as THREE.Vector3);
-      if (!lerped) {
-        (r as RapierRigidBody & { lerped?: THREE.Vector3 }).lerped = next.clone();
-      } else {
-        const dist = lerped.distanceTo(next);
-        const speed = Math.max(0.1, Math.min(1, dist));
-        lerped.lerp(next, 0.9 * speed);
-      }
-    });
+    // Cord runs from the card's clip slot (top center) up to the pivot.
+    // +0.15 lets the cord tip tuck into the clip; z is behind the card so the
+    // card occludes the tip (reads as inserted into the lanyard hole).
+    const r = ROPE_LEN - CARD_H / 2 + 0.15;
+    const topX = PIVOT.x + r * Math.sin(theta);
+    const topY = PIVOT.y - r * Math.cos(theta);
 
-    const l1 = (j1.current as RapierRigidBody & { lerped?: THREE.Vector3 }).lerped!;
-    const l2 = (j2.current as RapierRigidBody & { lerped?: THREE.Vector3 }).lerped!;
-
-    curve.points[0].copy(j3.current.translation() as THREE.Vector3);
-    curve.points[1].copy(l2 ?? (j2.current.translation() as THREE.Vector3));
-    curve.points[2].copy(l1 ?? (j1.current.translation() as THREE.Vector3));
-    curve.points[3].copy(fixed.current.translation() as THREE.Vector3);
+    curve.points[0].set(topX, topY, 0);
+    curve.points[1].set((topX + PIVOT.x) / 2, (topY + PIVOT.y) / 2, 0);
+    curve.points[2].copy(PIVOT);
 
     const geo = band.current?.geometry as unknown as {
       setPoints: (pts: THREE.Vector3[]) => void;
     };
     geo?.setPoints(curve.getPoints(32));
+  };
 
-    // keep card upright-ish, no spin
-    void v2;
+  useFrame((state) => {
+    if (start.current === null) start.current = state.clock.elapsedTime;
+    const t = state.clock.elapsedTime - start.current;
+
+    // Damped pendulum: small wobble (left/right) then settles to center. After
+    // DURATION it stays clamped at center (animation ends, cord stays glued).
+    const theta =
+      t >= DURATION ? 0 : 0.3 * Math.exp(-2.4 * t) * Math.cos(6.2 * t);
+    apply(theta);
   });
 
   return (
     <>
-      <group position={[0, 4, 0]}>
-        <RigidBody ref={fixed} type="fixed" />
-        <RigidBody ref={j1} position={[0.5, 0, 0]} type="dynamic" linearDamping={2} angularDamping={2}>
-          <BallCollider args={[0.1]} />
-        </RigidBody>
-        <RigidBody ref={j2} position={[1, 0, 0]} type="dynamic" linearDamping={2} angularDamping={2}>
-          <BallCollider args={[0.1]} />
-        </RigidBody>
-        <RigidBody ref={j3} position={[1.5, 0, 0]} type="dynamic" linearDamping={2} angularDamping={2}>
-          <BallCollider args={[0.1]} />
-        </RigidBody>
-        <RigidBody
-          ref={card}
-          position={[2, 0, 0]}
-          type="dynamic"
-          linearDamping={2}
-          angularDamping={3}
-        >
-          <CuboidCollider args={[CARD_W / 2, CARD_H / 2, 0.01]} />
-          <mesh>
-            <planeGeometry args={[CARD_W, CARD_H]} />
-            <meshBasicMaterial map={texture} toneMapped={false} side={THREE.DoubleSide} />
-          </mesh>
-        </RigidBody>
-      </group>
-
-      <mesh ref={band}>
+      {/* Cord behind the card so its tip tucks into the clip slot. */}
+      <mesh ref={band} position={[0, 0, -0.05]}>
         <meshLineGeometry />
         <meshLineMaterial
-          color="#9a9a9a"
-          depthTest={false}
+          color="#6d6d6d"
           resolution={[width, height]}
-          useMap
-          map={bandTex}
-          repeat={[-2, 1]}
-          lineWidth={0.4}
+          lineWidth={0.3}
           toneMapped={false}
         />
       </mesh>
+
+      <group ref={card}>
+        <mesh>
+          <planeGeometry args={[CARD_W, CARD_H]} />
+          <meshBasicMaterial map={texture} toneMapped={false} side={THREE.DoubleSide} />
+        </mesh>
+      </group>
     </>
   );
 }
