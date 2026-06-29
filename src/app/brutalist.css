@@ -12,7 +12,7 @@
   --br-fg:     var(--color-ink);      /* #0A0A0A */
   --br-mute:   var(--color-muted);    /* #5B5B5B */
   --br-yellow: var(--color-brand);    /* #F5E22A */
-  font-family: var(--font-archivo), 'Helvetica Neue', Helvetica, sans-serif;
+  font-family: var(--font-inter), 'Helvetica Neue', Helvetica, sans-serif;
   background: var(--br-bg);
   color: var(--br-fg);
   width: 100%;
@@ -155,38 +155,73 @@
   gap: 16px;
   padding-top: 32px;
 }
+.br .hero .headline { display: flex; flex-direction: column; }
 .br .hero .subtitle {
   font-size: 40px;
   font-weight: 700;
-  letter-spacing: 0.18em;
   color: var(--br-mute);
-  text-transform: uppercase;
-  line-height: 1.6;
+  line-height: 60px;
 }
 .br .hero .name {
-  font-size: 80px;
+  font-size: 72px;
   font-weight: 900;
-  line-height: 1.25;
+  line-height: 80px;
   margin: 0;
 }
 .br .hero .desc {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 64px;
   padding: 16px 0;
 }
 .br .hero .role {
+  display: flex;
+  align-items: flex-start;
   font-size: 32px;
-  font-weight: 700;
-  letter-spacing: 0.18em;
-  color: var(--br-mute);
-  text-transform: uppercase;
+  position: relative;
+  z-index: 0;
 }
-.br .hero .intro p { font-size: 18px; font-weight: 500; line-height: 28px; margin: 0; }
-.br .hero .intro-group { display: flex; flex-direction: column; gap: 24px; }
-.br .hero .intro-body { max-width: 540px; display: flex; flex-direction: column; gap: 28px; }
-.br .hero .intro-body p { font-size: 18px; font-weight: 500; line-height: 28px; }
-.br .hero .intro .em { font-weight: 600; text-decoration: underline; text-underline-offset: 4px; }
+.br .hero .role-arrow {
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: 5.76px;
+  color: var(--br-mute);
+}
+.br .hero .role-mark {
+  position: relative;
+  font-weight: 700;
+  line-height: 48px;
+  color: var(--br-fg);
+}
+.br .hero .role-mark::before {
+  content: '';
+  position: absolute;
+  inset: 0 -8px;
+  background: var(--br-yellow);
+  z-index: -1;
+}
+.br .hero .intro { display: flex; flex-direction: column; gap: 16px; }
+.br .hero .intro-p { font-size: 18px; margin: 0; }
+.br .hero .intro-p .lead { font-weight: 400; color: var(--br-mute); }
+.br .hero .intro-p .em { font-weight: 500; color: var(--br-fg); }
+.br .hero .intro-p1 { max-width: 704px; line-height: 24px; }
+.br .hero .intro-p2 { max-width: 540px; line-height: 28px; }
+.br .hero .intro-p3 { max-width: 460px; line-height: 28px; }
+.br .hero .badge-col {
+  flex-shrink: 0;
+  width: 420px;
+  height: 640px;
+  position: relative;
+}
+.br .hero .lanyard-canvas {
+  position: absolute;
+  inset: 0;
+  width: 100% !important;
+  height: 100% !important;
+  display: block;
+  pointer-events: none;
+  touch-action: none;
+}
 .br .hero .photo-col {
   display: flex;
   flex-direction: column;
@@ -271,6 +306,16 @@
   padding: 0 8px;
   -webkit-box-decoration-break: clone;
   box-decoration-break: clone;
+  display: inline-block;
+  clip-path: inset(0 100% 0 0);
+  transition: clip-path 2.8s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.br .portband.in h2 mark { clip-path: inset(0 0 0 0); }
+.br .portband.in h2 mark:nth-of-type(1) { transition-delay: 0.2s; }
+.br .portband.in h2 mark:nth-of-type(2) { transition-delay: 0.8s; }
+.br .portband.in h2 mark:nth-of-type(3) { transition-delay: 1.4s; }
+@media (prefers-reduced-motion: reduce) {
+  .br .portband h2 mark { clip-path: none; transition: none; }
 }
 
 /* ─── Section base ─── */
@@ -291,23 +336,239 @@
   text-transform: uppercase;
 }
 
-/* ─── What I do ─── */
-.br .what { background: var(--br-fg); color: var(--br-bg); }
-.br .what .head { margin-bottom: 56px; }
-.br .what .head h2 { color: var(--br-bg); }
-.br .what .grid { display: grid; grid-template-columns: repeat(3, 312px); justify-content: space-between; row-gap: 56px; }
-.br .what .cell {
+/* ─── How I work — interactive flowchart ─── */
+.br .flow { background: var(--br-fg); color: var(--br-bg); }
+.br .flow .head { margin-bottom: 16px; }
+.br .flow .head h2 { color: var(--br-bg); }
+.br .flow .flow-sub {
+  font-size: 20px;
+  line-height: 1.5;
+  font-weight: 600;
+  max-width: 680px;
+  color: var(--br-bg);
+}
+.br .flow .flow-hint {
+  font-family: var(--font-jetbrains-mono), ui-monospace, monospace;
+  font-size: 12px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--br-mute);
+  margin: 12px 0 44px;
+}
+
+/* board — grid and expanded view share the same box */
+.br .flow .fboard { position: relative; }
+.br .flow .fgrid {
   display: flex;
   flex-direction: column;
-  gap: 16px;
-  color: var(--br-bg);
-  transition: color 0.2s;
+  gap: 24px;
+  transition: opacity 0.3s ease, transform 0.3s ease;
 }
-.br .what .cell:hover { color: var(--br-yellow); }
-.br .what .cell .k { font-size: 20px; font-weight: 800; line-height: 1.15; letter-spacing: -0.01em; }
-.br .what .ico { width: 72px; height: 72px; display: block; }
-.br .what .ico svg { width: 100%; height: 100%; display: block; }
-.br .what .cell .v { font-size: 16px; line-height: 24px; font-weight: 400; }
+.br .flow .frow {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+}
+/* while a step is expanded the grid fades out but stays in flow so the
+   board keeps its height (the FLIP target) and the expanded element overlays it */
+.br .flow .fboard[data-open='true'] .fgrid {
+  opacity: 0;
+  transform: scale(0.97);
+  pointer-events: none;
+}
+
+/* card (node) */
+.br .flow .fcard {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  aspect-ratio: 16 / 11;
+  padding: 22px 24px;
+  background: transparent;
+  color: var(--br-bg);
+  border: 3px solid var(--br-bg);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  overflow: hidden;
+  transition: transform 0.2s ease, border-color 0.2s ease, background 0.2s ease, color 0.2s ease;
+}
+.br .flow .fcard:hover { border-color: var(--br-yellow); transform: translateY(-3px); }
+.br .flow .fcard:focus-visible { outline: 3px solid var(--br-yellow); outline-offset: 3px; }
+.br .flow .fnum {
+  font-family: var(--font-jetbrains-mono), ui-monospace, monospace;
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: var(--br-yellow);
+  transition: color 0.2s ease;
+  position: relative;
+  z-index: 2;
+}
+.br .flow .fcard-title {
+  font-size: 24px;
+  font-weight: 800;
+  line-height: 1.1;
+  letter-spacing: -0.01em;
+  max-width: 80%;
+  position: relative;
+  z-index: 2;
+}
+.br .flow .fcard-ico {
+  position: absolute;
+  right: -10px;
+  bottom: -10px;
+  width: 96px;
+  height: 96px;
+  color: var(--br-bg);
+  opacity: 0.12;
+  transition: opacity 0.2s ease, color 0.2s ease;
+  z-index: 1;
+}
+.br .flow .fcard-ico svg { width: 100%; height: 100%; display: block; }
+.br .flow .fcard:hover .fcard-ico { opacity: 0.22; }
+.br .flow .ftog {
+  position: absolute;
+  top: 18px;
+  right: 22px;
+  font-size: 30px;
+  font-weight: 300;
+  line-height: 1;
+  color: var(--br-mute);
+  transition: color 0.2s ease;
+  z-index: 2;
+}
+.br .flow .fcard:hover .ftog { color: var(--br-yellow); }
+
+/* connector arrow between cards in a row */
+.br .flow .farrow {
+  position: absolute;
+  top: 50%;
+  right: -25px;
+  transform: translateY(-50%);
+  width: 26px;
+  height: 26px;
+  color: rgba(235, 234, 233, 0.45);
+  z-index: 4;
+}
+.br .flow .farrow svg { width: 100%; height: 100%; display: block; }
+
+/* full-section expanded step — same element, grown via FLIP (JS sets geometry) */
+.br .flow .fexpanded {
+  display: none;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  z-index: 5;
+  overflow: hidden;
+  transition:
+    top 0.5s cubic-bezier(0.22, 1, 0.36, 1),
+    left 0.5s cubic-bezier(0.22, 1, 0.36, 1),
+    width 0.5s cubic-bezier(0.22, 1, 0.36, 1),
+    height 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.br .flow .fboard[data-open='true'] .fexpanded { display: block; }
+.br .flow .fexp-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background: var(--br-fg);
+  border: 3px solid var(--br-bg);
+  overflow: hidden;
+}
+
+/* ghost icon — visible during the grow (mirrors the card), fades out on reveal */
+.br .flow .fexp-ghost {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--br-bg);
+  opacity: 0.12;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+}
+.br .flow .fexp-ghost svg { width: 38%; max-width: 200px; height: auto; }
+.br .flow .fexpanded.revealed .fexp-ghost { opacity: 0; }
+
+/* content fades/slides in once the grow finishes */
+.br .flow .fexp-top,
+.br .flow .fexp-body {
+  opacity: 0;
+  transform: translateY(10px);
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+.br .flow .fexpanded.revealed .fexp-top { opacity: 1; transform: none; transition-delay: 0.02s; }
+.br .flow .fexpanded.revealed .fexp-body { opacity: 1; transform: none; transition-delay: 0.09s; }
+.br .flow .fexp-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  padding: 24px 28px;
+  border-bottom: 3px solid var(--br-bg);
+}
+.br .flow .fexp-meta { display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+.br .flow .fexp-count {
+  font-family: var(--font-jetbrains-mono), ui-monospace, monospace;
+  font-size: 13px;
+  letter-spacing: 0.14em;
+  color: var(--br-yellow);
+}
+.br .flow .fexp-title {
+  font-size: 40px;
+  font-weight: 900;
+  line-height: 1;
+  letter-spacing: -0.02em;
+  color: var(--br-bg);
+}
+.br .flow .fexp-ctrl { display: flex; gap: 10px; flex-shrink: 0; }
+.br .flow .fexp-btn {
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: 2px solid var(--br-bg);
+  color: var(--br-bg);
+  cursor: pointer;
+  transition: background 0.18s ease, color 0.18s ease, transform 0.18s ease;
+}
+.br .flow .fexp-btn svg { width: 22px; height: 22px; display: block; }
+.br .flow .fexp-btn:hover { background: var(--br-yellow); border-color: var(--br-yellow); color: var(--br-fg); }
+.br .flow .fexp-btn:focus-visible { outline: 3px solid var(--br-yellow); outline-offset: 3px; }
+.br .flow .fexp-close { margin-left: 6px; }
+.br .flow .fexp-close:hover { background: var(--br-bg); border-color: var(--br-bg); color: var(--br-fg); }
+
+/* body — media zone + text zone (ready for images later) */
+.br .flow .fexp-body { display: grid; grid-template-columns: 1fr 1fr; flex: 1; }
+.br .flow .fexp-media {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--br-yellow);
+  color: var(--br-fg);
+  padding: 40px;
+  border-right: 3px solid var(--br-bg);
+}
+.br .flow .fexp-ico { width: 132px; height: 132px; display: block; }
+.br .flow .fexp-ico svg { width: 100%; height: 100%; display: block; }
+.br .flow .fexp-text { display: flex; flex-direction: column; justify-content: center; padding: 40px 44px; }
+.br .flow .fexp-text p { font-size: 20px; line-height: 32px; font-weight: 400; max-width: 560px; }
+
+@media (prefers-reduced-motion: reduce) {
+  .br .flow .fcard,
+  .br .flow .fgrid,
+  .br .flow .fexpanded,
+  .br .flow .fexp-top,
+  .br .flow .fexp-body,
+  .br .flow .fexp-ghost { transition: none; }
+}
 
 /* ─── Work — infinite marquee ─── */
 .br .work {
@@ -556,8 +817,8 @@
    ═══════════════════════════════════════════════════════════════ */
 @media (min-width: 1440px) {
   .br .hero .top-row { padding: 64px 64px 0; gap: 48px; }
-  .br .hero .name { font-size: 96px; }
   .br .hero .photo { width: 420px; height: 560px; }
+  .br .hero .badge-col { width: 480px; height: 700px; }
   .br .sec { padding: 80px 64px; }
   .br .sec .head h2 { font-size: 72px; }
   .br .skl { padding: 64px 64px; }
@@ -580,10 +841,12 @@
   .br .hero .top-row { padding: 40px 32px 0; gap: 24px; }
   .br .hero .left { padding-top: 16px; }
   .br .hero .subtitle { font-size: 28px; line-height: 1.4; }
-  .br .hero .name { font-size: 56px; }
-  .br .hero .role { font-size: 22px; }
-  .br .hero .intro p { font-size: 16px; }
+  .br .hero .name { font-size: 56px; line-height: 1.1; }
+  .br .hero .desc { gap: 40px; }
+  .br .hero .role { font-size: 22px; line-height: 1.4; }
+  .br .hero .intro-p { font-size: 16px; }
   .br .hero .photo { width: 280px; height: 373px; border-top-width: 20px; border-left-width: 20px; }
+  .br .hero .badge-col { width: 320px; height: 540px; }
   .br .hero .icell { padding: 24px 0; }
   .br .hero .icell .k { font-size: 13px; }
   .br .hero .icell .v { font-size: 14px; }
@@ -597,9 +860,20 @@
   .br .sec .head { margin-bottom: 28px; }
   .br .sec .head h2 { font-size: 44px; }
 
-  /* What — 2 cols */
-  .br .what .head { margin-bottom: 48px; }
-  .br .what .grid { grid-template-columns: repeat(2, 1fr); gap: 40px 32px; }
+  /* Flow — tighter (still 3 cols) */
+  .br .flow .flow-sub { font-size: 18px; }
+  .br .flow .flow-hint { margin: 12px 0 36px; }
+  .br .flow .frow { gap: 16px; }
+  .br .flow .fcard { aspect-ratio: 5 / 4; padding: 18px; }
+  .br .flow .fcard-title { font-size: 19px; }
+  .br .flow .fcard-ico { width: 76px; height: 76px; }
+  .br .flow .farrow { right: -18px; width: 20px; height: 20px; }
+  .br .flow .fgrid { gap: 16px; }
+  .br .flow .fexp-card { min-height: 440px; }
+  .br .flow .fexp-title { font-size: 32px; }
+  .br .flow .fexp-ico { width: 104px; height: 104px; }
+  .br .flow .fexp-text { padding: 32px 32px; }
+  .br .flow .fexp-text p { font-size: 18px; line-height: 29px; }
 
   /* Work marquee */
   .br .work { padding: 48px 0; }
@@ -658,12 +932,13 @@
   /* Hero — stack column (text first, photo below) */
   .br .hero .top-row { flex-direction: column; padding: 24px 20px 0; gap: 24px; }
   .br .hero .left { padding-top: 0; gap: 12px; }
-  .br .hero .subtitle { font-size: 18px; letter-spacing: 0.12em; line-height: 1.4; }
+  .br .hero .subtitle { font-size: 24px; line-height: 1.4; }
   .br .hero .name { font-size: 48px; line-height: 1.05; }
-  .br .hero .desc { padding: 8px 0; gap: 10px; }
-  .br .hero .role { font-size: 18px; letter-spacing: 0.1em; }
-  .br .hero .intro p { font-size: 18px; }
+  .br .hero .desc { padding: 8px 0; gap: 32px; }
+  .br .hero .role { font-size: 20px; line-height: 1.4; }
+  .br .hero .intro-p { font-size: 16px; }
   .br .hero .photo-col { width: 100%; }
+  .br .hero .badge-col { width: 100%; height: 460px; }
   .br .hero .photo {
     width: 100%;
     height: auto;
@@ -687,10 +962,29 @@
   .br .sec .head .n { font-size: 12px; }
   .br .sec .head h2 { font-size: 32px; line-height: 1; }
 
-  /* What — 1 col */
-  .br .what .head { margin-bottom: 32px; }
-  .br .what .grid { grid-template-columns: 1fr; gap: 36px; }
-  .br .what .cell .k { font-size: 18px; }
+  /* Flow — 1 col stacked nodes; expanded view stacks media over text */
+  .br .flow .head { margin-bottom: 12px; }
+  .br .flow .flow-sub { font-size: 16px; }
+  .br .flow .flow-hint { font-size: 11px; margin: 10px 0 28px; }
+  .br .flow .fgrid { gap: 12px; }
+  .br .flow .frow { grid-template-columns: 1fr; gap: 12px; }
+  .br .flow .fcard { aspect-ratio: auto; min-height: 96px; padding: 18px 20px; }
+  .br .flow .fcard-title { font-size: 19px; max-width: 78%; }
+  .br .flow .fcard-ico { width: 72px; height: 72px; right: -8px; bottom: -8px; }
+  .br .flow .ftog { top: 16px; right: 18px; }
+  .br .flow .farrow { display: none; }
+
+  .br .flow .fexp-card { min-height: 0; }
+  .br .flow .fexp-top { padding: 18px 20px; gap: 16px; }
+  .br .flow .fexp-title { font-size: 24px; }
+  .br .flow .fexp-count { font-size: 12px; }
+  .br .flow .fexp-btn { width: 42px; height: 42px; }
+  .br .flow .fexp-ctrl { gap: 8px; }
+  .br .flow .fexp-body { grid-template-columns: 1fr; }
+  .br .flow .fexp-media { padding: 32px; border-right: none; border-bottom: 3px solid var(--br-bg); }
+  .br .flow .fexp-ico { width: 88px; height: 88px; }
+  .br .flow .fexp-text { padding: 24px 20px; }
+  .br .flow .fexp-text p { font-size: 16px; line-height: 26px; }
 
   /* Work marquee */
   .br .work { padding: 36px 0; }

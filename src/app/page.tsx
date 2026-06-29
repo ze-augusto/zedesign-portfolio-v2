@@ -1,10 +1,17 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useLayoutEffect, useRef } from 'react';
+import dynamic from 'next/dynamic';
 import Link from 'next/link';
 import './brutalist.css';
+
+// 3D physics badge — client-only (three/rapier WASM), no SSR.
+const Lanyard = dynamic(() => import('@/components/Lanyard'), { ssr: false });
 import { useI18n } from '@/hooks/useI18n';
 import { CONTACT } from '@/data/about';
+
+// useLayoutEffect on the client, useEffect on the server (avoids SSR warning).
+const useIsoLayoutEffect = typeof window !== 'undefined' ? useLayoutEffect : useEffect;
 
 // Ícones da seção "O que faço" — 72×72, recoloríveis via currentColor.
 // Recortes (#0A0A0A) ficam fixos para vazar contra o fundo do card.
@@ -64,32 +71,159 @@ export default function HomePage() {
   const { lang, t, toggle } = useI18n('PT');
   const [copied, setCopied] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [openStep, setOpenStep] = useState<number | null>(null);
+  const [closing, setClosing] = useState(false);
+  const [revealed, setRevealed] = useState(false);
+  const [cols, setCols] = useState(3);
+  const [bandIn, setBandIn] = useState(false);
+  const stepCount = t.what.items.length;
+
+  const bandRef = useRef<HTMLElement>(null);
+  const boardRef = useRef<HTMLDivElement>(null);
+  const expRef = useRef<HTMLDivElement>(null);
+  const originRef = useRef<{ top: number; left: number; width: number; height: number } | null>(null);
+  const openingRef = useRef(false);
+
+  // Card geometry relative to the board (so the expanded element can morph
+  // from the card's exact position/size to filling the whole board).
+  const getRect = (card: Element) => {
+    const b = boardRef.current!.getBoundingClientRect();
+    const c = card.getBoundingClientRect();
+    return { top: c.top - b.top, left: c.left - b.left, width: c.width, height: c.height };
+  };
+
+  const openCard = (i: number, e: React.MouseEvent) => {
+    if (openStep !== null) return;
+    originRef.current = getRect(e.currentTarget as Element);
+    openingRef.current = true;
+    setRevealed(false);
+    setOpenStep(i);
+  };
+
+  // Step through while expanded — keep it filled, just re-anchor the origin
+  // to the new card so a later close morphs back to the right place.
+  const goToStep = (i: number) => {
+    const card = boardRef.current?.querySelector(`[data-card="${i}"]`);
+    if (card) originRef.current = getRect(card);
+    setOpenStep(i);
+  };
+
+  const closeCard = () => {
+    const el = expRef.current;
+    const o = originRef.current;
+    if (!el || !o) { setOpenStep(null); return; }
+    setRevealed(false);
+    setClosing(true);
+    requestAnimationFrame(() => {
+      el.style.top = `${o.top}px`;
+      el.style.left = `${o.left}px`;
+      el.style.width = `${o.width}px`;
+      el.style.height = `${o.height}px`;
+    });
+    let fin = false;
+    const finish = () => {
+      if (fin) return;
+      fin = true;
+      el.removeEventListener('transitionend', done);
+      clearTimeout(timer);
+      setOpenStep(null);
+      setClosing(false);
+      originRef.current = null;
+      el.removeAttribute('style');
+    };
+    const done = (ev: TransitionEvent) => { if (ev.propertyName === 'width') finish(); };
+    el.addEventListener('transitionend', done);
+    const timer = setTimeout(finish, 600); // fallback when transitions are off
+  };
+
+  // FLIP expand: place the element on the card, then animate it to fill the board.
+  useIsoLayoutEffect(() => {
+    if (!openingRef.current || openStep === null) return;
+    openingRef.current = false;
+    const el = expRef.current;
+    const board = boardRef.current;
+    const o = originRef.current;
+    if (!el || !board || !o) return;
+    el.style.transition = 'none';
+    el.style.top = `${o.top}px`;
+    el.style.left = `${o.left}px`;
+    el.style.width = `${o.width}px`;
+    el.style.height = `${o.height}px`;
+    void el.offsetWidth; // force reflow so the start frame sticks
+    el.style.transition = '';
+    el.style.top = '0px';
+    el.style.left = '0px';
+    el.style.width = '100%';
+    el.style.height = `${board.offsetHeight}px`;
+    let done = false;
+    const finish = () => {
+      if (done) return;
+      done = true;
+      el.removeEventListener('transitionend', reveal);
+      clearTimeout(timer);
+      setRevealed(true);
+    };
+    const reveal = (ev: TransitionEvent) => { if (ev.propertyName === 'width') finish(); };
+    el.addEventListener('transitionend', reveal);
+    const timer = setTimeout(finish, 620); // fallback when transitions are off
+    return () => { el.removeEventListener('transitionend', reveal); clearTimeout(timer); };
+  }, [openStep]);
+
+  // Keep the expanded height in sync if the viewport resizes while open.
+  useEffect(() => {
+    if (openStep === null || closing) return;
+    const onResize = () => {
+      const el = expRef.current;
+      const board = boardRef.current;
+      if (el && board) el.style.height = `${board.offsetHeight}px`;
+    };
+    window.addEventListener('resize', onResize);
+    return () => window.removeEventListener('resize', onResize);
+  }, [openStep, closing]);
+
+  // Grid columns drive how steps chunk into rows. 3 cols ≥768px, 1 col on mobile.
+  useEffect(() => {
+    const mq = window.matchMedia('(max-width: 767px)');
+    const apply = () => setCols(mq.matches ? 1 : 3);
+    apply();
+    mq.addEventListener('change', apply);
+    return () => mq.removeEventListener('change', apply);
+  }, []);
+
+  // Reveal the manifesto marks when the band scrolls into view (one-shot).
+  useEffect(() => {
+    const el = bandRef.current;
+    if (!el) return;
+    const io = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setBandIn(true);
+          io.disconnect();
+        }
+      },
+      { threshold: 0.35 }
+    );
+    io.observe(el);
+    return () => io.disconnect();
+  }, []);
+
+  // Keyboard control while a step is expanded: Esc closes, ← → navigate.
+  useEffect(() => {
+    if (openStep === null) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') closeCard();
+      else if (e.key === 'ArrowRight') goToStep((openStep + 1) % stepCount);
+      else if (e.key === 'ArrowLeft') goToStep((openStep - 1 + stepCount) % stepCount);
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [openStep, stepCount]);
 
   const handleCopyEmail = async () => {
     await navigator.clipboard.writeText(CONTACT.email);
     setCopied(true);
     setTimeout(() => setCopied(false), 3000);
-  };
-
-  const scrollToContact = (e: React.MouseEvent<HTMLAnchorElement>) => {
-    e.preventDefault();
-    const el = document.getElementById('contact');
-    if (!el) return;
-    const offset = 56;
-    const start = window.scrollY;
-    const target = el.getBoundingClientRect().top + start - offset;
-    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    if (reduce) { window.scrollTo(0, target); return; }
-    const dist = target - start;
-    const dur = 1400;
-    const ease = (t: number) => t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
-    const t0 = performance.now();
-    const step = (now: number) => {
-      const p = Math.min((now - t0) / dur, 1);
-      window.scrollTo(0, start + dist * ease(p));
-      if (p < 1) requestAnimationFrame(step);
-    };
-    requestAnimationFrame(step);
   };
 
   return (
@@ -177,61 +311,33 @@ export default function HomePage() {
       <section className="hero">
         <div className="top-row">
           <div className="left">
-            <div>
+            <div className="headline">
               <p className="subtitle">{t.hero.subtitle}</p>
               <h1 className="name">{t.hero.nameShort}</h1>
             </div>
             <div className="desc">
-              <p className="role">↳ {t.hero.role}</p>
-              <div className="intro-group">
-                <div className="intro">
-                  <p>{t.hero.intro1}</p>
-                  <p>{t.hero.intro2pre}<span className="em">{t.hero.intro2em}</span></p>
-                </div>
-                <div className="intro-body">
-                  {lang === 'PT' ? (
-                    <>
-                      <p>Especialista na evolução e transformação digital dos sistemas financeiro e acadêmico da <strong>Universidade de Fortaleza</strong>, plataformas utilizadas por <strong>20.000+ alunos e 1.000+ funcionários</strong> diariamente, traduzindo regras de negócio densas e requisitos técnicos estritos em <strong>jornadas de usuário eficientes e escaláveis</strong>.</p>
-                      <p>Anteriormente, participei diretamente da criação da plataforma de gestão de licitações públicas da <strong>Procuradoria Geral do Estado do Ceará (PGE-CE)</strong>, desde a definição de requisitos, prototipação, até o handoff para desenvolvedores e melhorias identificadas após implantações.</p>
-                      <p>Ao focar 100% no processo de design de um produto, garanto o alinhamento de <strong>modelagem de processos, viabilidade técnica e interfaces claras e escaláveis</strong>.</p>
-                    </>
-                  ) : (
-                    <>
-                      <p>Specialist in the digital evolution and transformation of the financial and academic systems of <strong>University of Fortaleza</strong>, platforms used by <strong>20,000+ students and 1,000+ staff</strong> daily, translating dense business rules and strict technical requirements into <strong>efficient, scalable user journeys</strong>.</p>
-                      <p>Previously, I was directly involved in building the public procurement management platform for the <strong>Procuradoria Geral do Estado do Ceará (PGE-CE)</strong>, from requirements definition and prototyping through developer handoff and post-deployment improvements.</p>
-                      <p>By focusing 100% on a product&apos;s design process, I ensure alignment between <strong>process modeling, technical feasibility, and clear, scalable interfaces</strong>.</p>
-                    </>
-                  )}
-                </div>
+              <p className="role">
+                <span className="role-arrow" aria-hidden="true">↳</span>
+                <span className="role-mark">{t.hero.role}</span>
+              </p>
+              <div className="intro">
+                {t.hero.intro.map((p, i) => (
+                  <p key={i} className={`intro-p intro-p${i + 1}`}>
+                    <span className="lead">{p.lead}</span>
+                    <span className="em">{p.em}</span>
+                  </p>
+                ))}
               </div>
             </div>
           </div>
-          <div className="photo-col">
-            <div className="photo">
-              <img src="/images/foto_ze2.png" alt="Zé" />
-            </div>
-            <div className="info-panel">
-              <div className="icell">
-                <span className="k">{lang === 'PT' ? 'Localização' : 'Location'}</span>
-                <p className="v">{t.hero.location}</p>
-              </div>
-              <div className="icell">
-                <span className="k">{lang === 'PT' ? 'Status atual' : 'Current status'}</span>
-                <span className="pill"><span className="dot">●</span> {t.hero.available}</span>
-              </div>
-              <div className="icell">
-                <span className="k">{lang === 'PT' ? 'Contato' : 'Contact'}</span>
-                <p className="v">
-                  <a href="#contact" onClick={scrollToContact}>{t.hero.contactCta}</a>{t.hero.contactSuffix}
-                </p>
-              </div>
-            </div>
+          <div className="badge-col" aria-hidden="true">
+            <Lanyard />
           </div>
         </div>
       </section>
 
       {/* Manifesto band */}
-      <section className="portband">
+      <section className={`portband${bandIn ? ' in' : ''}`} ref={bandRef}>
         <h2>
           {lang === 'PT' ? (
             <>
@@ -251,19 +357,108 @@ export default function HomePage() {
         </h2>
       </section>
 
-      {/* What I do */}
-      <section className="sec what">
+      {/* How I work — interactive flowchart */}
+      <section className="sec flow">
         <div className="head">
           <h2>{t.what.title}</h2>
         </div>
-        <div className="grid">
-          {t.what.items.map((item, i) => (
-            <div className="cell" key={i}>
-              <p className="k">{item.k}</p>
-              <span className="ico">{WHAT_ICONS[i]}</span>
-              <p className="v">{item.v}</p>
-            </div>
-          ))}
+        <p className="flow-sub">{t.process.subtitle}</p>
+        <p className="flow-hint">
+          {lang === 'PT' ? 'Clique em cada etapa para ver os detalhes' : 'Click each step to see the details'}
+        </p>
+        <div className="fboard" data-open={openStep !== null} ref={boardRef}>
+          {/* Grid of step nodes — hidden while a step is expanded */}
+          <div className="fgrid" aria-hidden={openStep !== null}>
+            {Array.from({ length: Math.ceil(stepCount / cols) }, (_, r) => {
+              const start = r * cols;
+              const row = t.what.items.slice(start, start + cols);
+              return (
+                <div className="frow" key={r}>
+                  {row.map((item, j) => {
+                    const i = start + j;
+                    return (
+                      <button
+                        key={i}
+                        className="fcard"
+                        data-card={i}
+                        onClick={(e) => openCard(i, e)}
+                        aria-expanded={openStep === i}
+                        aria-controls="fexpanded"
+                        tabIndex={openStep !== null ? -1 : 0}
+                      >
+                        <span className="fnum">{`0${i + 1}`}</span>
+                        <span className="fcard-ico" aria-hidden="true">{WHAT_ICONS[i]}</span>
+                        <span className="fcard-title">{item.k}</span>
+                        <span className="ftog" aria-hidden="true">+</span>
+                        {j < row.length - 1 && (
+                          <span className="farrow" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" fill="none">
+                              <path d="M5 12h13M13 6l6 6-6 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                            </svg>
+                          </span>
+                        )}
+                      </button>
+                    );
+                  })}
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Full-section expanded step — the card itself, grown via FLIP */}
+          <div
+            className={`fexpanded${revealed ? ' revealed' : ''}`}
+            id="fexpanded"
+            role="region"
+            aria-hidden={openStep === null}
+            ref={expRef}
+          >
+            {openStep !== null && (
+              <div className="fexp-card">
+                {/* Persistent layer — visible during the grow (mirrors the card) */}
+                <span className="fexp-ghost" aria-hidden="true">{WHAT_ICONS[openStep]}</span>
+                <div className="fexp-top">
+                  <div className="fexp-meta">
+                    <span className="fexp-count">{`0${openStep + 1} / 0${stepCount}`}</span>
+                    <h3 className="fexp-title">{t.what.items[openStep].k}</h3>
+                  </div>
+                  <div className="fexp-ctrl">
+                    <button
+                      className="fexp-btn"
+                      onClick={() => goToStep((openStep - 1 + stepCount) % stepCount)}
+                      aria-label={lang === 'PT' ? 'Etapa anterior' : 'Previous step'}
+                    >
+                      <svg viewBox="0 0 24 24" fill="none"><path d="M15 6l-6 6 6 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>
+                    </button>
+                    <button
+                      className="fexp-btn"
+                      onClick={() => goToStep((openStep + 1) % stepCount)}
+                      aria-label={lang === 'PT' ? 'Próxima etapa' : 'Next step'}
+                    >
+                      <svg viewBox="0 0 24 24" fill="none"><path d="M9 6l6 6-6 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>
+                    </button>
+                    <button
+                      className="fexp-btn fexp-close"
+                      onClick={closeCard}
+                      aria-label={lang === 'PT' ? 'Fechar' : 'Close'}
+                    >
+                      <svg viewBox="0 0 24 24" fill="none"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>
+                    </button>
+                  </div>
+                </div>
+                <div className="fexp-body">
+                  {/* Media zone — icon now, images later */}
+                  <div className="fexp-media">
+                    <span className="fexp-ico" aria-hidden="true">{WHAT_ICONS[openStep]}</span>
+                  </div>
+                  {/* Text zone */}
+                  <div className="fexp-text">
+                    <p>{t.what.items[openStep].v}</p>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
         </div>
       </section>
 
