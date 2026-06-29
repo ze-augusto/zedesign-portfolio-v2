@@ -152,7 +152,7 @@
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 0; /* headline encosta direto na desc (Figma: 0) */
   padding-top: 32px;
 }
 .br .hero .headline { display: flex; flex-direction: column; }
@@ -177,6 +177,7 @@
 .br .hero .role {
   display: flex;
   align-items: flex-start;
+  gap: 8px; /* ↳ -> texto, conforme Figma (Frame 27) */
   font-size: 32px;
   position: relative;
   z-index: 0;
@@ -380,6 +381,12 @@
   transform: scale(0.97);
   pointer-events: none;
 }
+/* while shrinking back, bring the grid in immediately so the cards are
+   already there as the expanded card collapses (not after it finishes) */
+.br .flow .fboard[data-closing='true'] .fgrid {
+  opacity: 1;
+  transform: none;
+}
 
 /* card (node) */
 .br .flow .fcard {
@@ -500,37 +507,43 @@
 .br .flow .fexpanded.revealed .fexp-ghost { opacity: 0; }
 
 /* content fades/slides in once the grow finishes */
-.br .flow .fexp-top,
 .br .flow .fexp-body {
+  display: flex;
+  flex: 1;
+  min-height: 0;
   opacity: 0;
   transform: translateY(10px);
   transition: opacity 0.3s ease, transform 0.3s ease;
 }
-.br .flow .fexpanded.revealed .fexp-top { opacity: 1; transform: none; transition-delay: 0.02s; }
 .br .flow .fexpanded.revealed .fexp-body { opacity: 1; transform: none; transition-delay: 0.09s; }
-.br .flow .fexp-top {
+
+/* thin paper accent bar across the top edge (brutalist double-line) */
+.br .flow .fexp-accent {
+  display: block;
+  flex-shrink: 0;
+  width: 100%;
+  height: 3px;
+  background: var(--br-bg);
+}
+
+/* replica of a grid card, shown only while the box collapses on close so the
+   landing on the real card underneath is seamless (same ink bg + paper border) */
+.br .flow .fexp-preview {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
   display: flex;
-  align-items: center;
+  flex-direction: column;
   justify-content: space-between;
-  gap: 24px;
-  padding: 24px 28px;
-  border-bottom: 3px solid var(--br-bg);
-}
-.br .flow .fexp-meta { display: flex; flex-direction: column; gap: 8px; min-width: 0; }
-.br .flow .fexp-count {
-  font-family: var(--font-jetbrains-mono), ui-monospace, monospace;
-  font-size: 13px;
-  letter-spacing: 0.14em;
-  color: var(--br-yellow);
-}
-.br .flow .fexp-title {
-  font-size: 40px;
-  font-weight: 900;
-  line-height: 1;
-  letter-spacing: -0.02em;
+  padding: 22px 24px;
   color: var(--br-bg);
+  overflow: hidden;
 }
-.br .flow .fexp-ctrl { display: flex; gap: 10px; flex-shrink: 0; }
+.br .flow .fboard[data-closing='true'] .fexp-accent,
+.br .flow .fboard[data-closing='true'] .fexp-body,
+.br .flow .fboard[data-closing='true'] .fexp-ghost { display: none; }
+
+.br .flow .fexp-ctrl { display: flex; gap: 10px; justify-content: flex-end; flex-shrink: 0; }
 .br .flow .fexp-btn {
   width: 48px;
   height: 48px;
@@ -546,30 +559,61 @@
 .br .flow .fexp-btn svg { width: 22px; height: 22px; display: block; }
 .br .flow .fexp-btn:hover { background: var(--br-yellow); border-color: var(--br-yellow); color: var(--br-fg); }
 .br .flow .fexp-btn:focus-visible { outline: 3px solid var(--br-yellow); outline-offset: 3px; }
-.br .flow .fexp-close { margin-left: 6px; }
 .br .flow .fexp-close:hover { background: var(--br-bg); border-color: var(--br-bg); color: var(--br-fg); }
 
-/* body — media zone + text zone (ready for images later) */
-.br .flow .fexp-body { display: grid; grid-template-columns: 1fr 1fr; flex: 1; }
+/* body — media zone (left) + text zone (right), split by a 3px divider */
 .br .flow .fexp-media {
+  flex: 1;
+  min-width: 0;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: var(--br-yellow);
+  background: #fff;
   color: var(--br-fg);
   padding: 40px;
   border-right: 3px solid var(--br-bg);
 }
 .br .flow .fexp-ico { width: 132px; height: 132px; display: block; }
 .br .flow .fexp-ico svg { width: 100%; height: 100%; display: block; }
-.br .flow .fexp-text { display: flex; flex-direction: column; justify-content: center; padding: 40px 44px; }
-.br .flow .fexp-text p { font-size: 20px; line-height: 32px; font-weight: 400; max-width: 560px; }
+.br .flow .fexp-text {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 40px 44px;
+}
+.br .flow .fexp-text-body {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 24px;
+}
+.br .flow .fexp-text-main { display: flex; flex-direction: column; gap: 24px; }
+.br .flow .fexp-count {
+  font-family: var(--font-jetbrains-mono), ui-monospace, monospace;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  color: var(--br-yellow);
+}
+.br .flow .fexp-heading { display: flex; flex-direction: column; gap: 8px; }
+.br .flow .fexp-title {
+  font-size: 40px;
+  font-weight: 900;
+  line-height: 44px;
+  letter-spacing: -0.02em;
+  color: var(--br-bg);
+}
+.br .flow .fexp-desc { font-size: 20px; line-height: 32px; font-weight: 400; color: var(--br-bg); }
+.br .flow .fexp-note { font-size: 16px; line-height: 32px; font-style: italic; color: var(--br-bg); }
 
 @media (prefers-reduced-motion: reduce) {
   .br .flow .fcard,
   .br .flow .fgrid,
   .br .flow .fexpanded,
-  .br .flow .fexp-top,
   .br .flow .fexp-body,
   .br .flow .fexp-ghost { transition: none; }
 }
@@ -874,10 +918,11 @@
   .br .flow .farrow { right: -18px; width: 20px; height: 20px; }
   .br .flow .fgrid { gap: 16px; }
   .br .flow .fexp-card { min-height: 440px; }
-  .br .flow .fexp-title { font-size: 32px; }
+  .br .flow .fexp-title { font-size: 32px; line-height: 36px; }
   .br .flow .fexp-ico { width: 104px; height: 104px; }
   .br .flow .fexp-text { padding: 32px 32px; }
-  .br .flow .fexp-text p { font-size: 18px; line-height: 29px; }
+  .br .flow .fexp-desc { font-size: 18px; line-height: 29px; }
+  .br .flow .fexp-preview { padding: 18px; }
 
   /* Work marquee */
   .br .work { padding: 48px 0; }
@@ -979,16 +1024,18 @@
   .br .flow .farrow { display: none; }
 
   .br .flow .fexp-card { min-height: 0; }
-  .br .flow .fexp-top { padding: 18px 20px; gap: 16px; }
-  .br .flow .fexp-title { font-size: 24px; }
+  .br .flow .fexp-title { font-size: 24px; line-height: 28px; }
   .br .flow .fexp-count { font-size: 12px; }
   .br .flow .fexp-btn { width: 42px; height: 42px; }
   .br .flow .fexp-ctrl { gap: 8px; }
-  .br .flow .fexp-body { grid-template-columns: 1fr; }
+  .br .flow .fexp-body { flex-direction: column; }
   .br .flow .fexp-media { padding: 32px; border-right: none; border-bottom: 3px solid var(--br-bg); }
   .br .flow .fexp-ico { width: 88px; height: 88px; }
   .br .flow .fexp-text { padding: 24px 20px; }
-  .br .flow .fexp-text p { font-size: 16px; line-height: 26px; }
+  .br .flow .fexp-desc { font-size: 16px; line-height: 26px; }
+  .br .flow .fexp-text-body { gap: 20px; }
+  .br .flow .fexp-note { font-size: 14px; line-height: 26px; }
+  .br .flow .fexp-preview { padding: 18px 20px; }
 
   /* Work marquee */
   .br .work { padding: 36px 0; }

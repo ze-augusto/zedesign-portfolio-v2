@@ -129,7 +129,11 @@ export default function HomePage() {
       setOpenStep(null);
       setClosing(false);
       originRef.current = null;
-      el.removeAttribute('style');
+      // NB: keep the inline geometry (origin-card size) here. data-open flips
+      // false on the next React commit and hides the element; wiping styles now
+      // would snap it to its CSS default (top-left, 100% wide) for one frame
+      // while still display:block -> visible flicker. The open effect re-seeds
+      // geometry before painting, so stale inline styles are harmless.
     };
     const done = (ev: TransitionEvent) => { if (ev.propertyName === 'width') finish(); };
     el.addEventListener('transitionend', done);
@@ -366,7 +370,7 @@ export default function HomePage() {
         <p className="flow-hint">
           {lang === 'PT' ? 'Clique em cada etapa para ver os detalhes' : 'Click each step to see the details'}
         </p>
-        <div className="fboard" data-open={openStep !== null} ref={boardRef}>
+        <div className="fboard" data-open={openStep !== null} data-closing={closing} ref={boardRef}>
           {/* Grid of step nodes — hidden while a step is expanded */}
           <div className="fgrid" aria-hidden={openStep !== null}>
             {Array.from({ length: Math.ceil(stepCount / cols) }, (_, r) => {
@@ -417,43 +421,63 @@ export default function HomePage() {
               <div className="fexp-card">
                 {/* Persistent layer — visible during the grow (mirrors the card) */}
                 <span className="fexp-ghost" aria-hidden="true">{WHAT_ICONS[openStep]}</span>
-                <div className="fexp-top">
-                  <div className="fexp-meta">
-                    <span className="fexp-count">{`0${openStep + 1} / 0${stepCount}`}</span>
-                    <h3 className="fexp-title">{t.what.items[openStep].k}</h3>
+                {/* Thin paper accent bar across the top edge */}
+                <span className="fexp-accent" aria-hidden="true" />
+                {/* While closing, the box collapses showing a replica of the grid
+                    card so it lands seamlessly on the real card underneath (no
+                    icon -> card swap at the end) */}
+                {closing && (
+                  <div className="fexp-preview" aria-hidden="true">
+                    <span className="fnum">{`0${openStep + 1}`}</span>
+                    <span className="fcard-ico">{WHAT_ICONS[openStep]}</span>
+                    <span className="fcard-title">{t.what.items[openStep].k}</span>
+                    <span className="ftog">+</span>
                   </div>
-                  <div className="fexp-ctrl">
-                    <button
-                      className="fexp-btn"
-                      onClick={() => goToStep((openStep - 1 + stepCount) % stepCount)}
-                      aria-label={lang === 'PT' ? 'Etapa anterior' : 'Previous step'}
-                    >
-                      <svg viewBox="0 0 24 24" fill="none"><path d="M15 6l-6 6 6 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>
-                    </button>
-                    <button
-                      className="fexp-btn"
-                      onClick={() => goToStep((openStep + 1) % stepCount)}
-                      aria-label={lang === 'PT' ? 'Próxima etapa' : 'Next step'}
-                    >
-                      <svg viewBox="0 0 24 24" fill="none"><path d="M9 6l6 6-6 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>
-                    </button>
-                    <button
-                      className="fexp-btn fexp-close"
-                      onClick={closeCard}
-                      aria-label={lang === 'PT' ? 'Fechar' : 'Close'}
-                    >
-                      <svg viewBox="0 0 24 24" fill="none"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>
-                    </button>
-                  </div>
-                </div>
+                )}
                 <div className="fexp-body">
                   {/* Media zone — icon now, images later */}
                   <div className="fexp-media">
                     <span className="fexp-ico" aria-hidden="true">{WHAT_ICONS[openStep]}</span>
                   </div>
-                  {/* Text zone */}
+                  {/* Text zone — controls, meta/title/body and disclaimer */}
                   <div className="fexp-text">
-                    <p>{t.what.items[openStep].v}</p>
+                    <div className="fexp-ctrl">
+                      <button
+                        className="fexp-btn"
+                        onClick={() => goToStep((openStep - 1 + stepCount) % stepCount)}
+                        aria-label={lang === 'PT' ? 'Etapa anterior' : 'Previous step'}
+                      >
+                        <svg viewBox="0 0 24 24" fill="none"><path d="M15 6l-6 6 6 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>
+                      </button>
+                      <button
+                        className="fexp-btn"
+                        onClick={() => goToStep((openStep + 1) % stepCount)}
+                        aria-label={lang === 'PT' ? 'Próxima etapa' : 'Next step'}
+                      >
+                        <svg viewBox="0 0 24 24" fill="none"><path d="M9 6l6 6-6 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>
+                      </button>
+                      <button
+                        className="fexp-btn fexp-close"
+                        onClick={closeCard}
+                        aria-label={lang === 'PT' ? 'Fechar' : 'Close'}
+                      >
+                        <svg viewBox="0 0 24 24" fill="none"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>
+                      </button>
+                    </div>
+                    <div className="fexp-text-body">
+                      <div className="fexp-text-main">
+                        <span className="fexp-count">{`0${openStep + 1} / 0${stepCount}`}</span>
+                        <div className="fexp-heading">
+                          <h3 className="fexp-title">{t.what.items[openStep].k}</h3>
+                          <p className="fexp-desc">{t.what.items[openStep].v}</p>
+                        </div>
+                      </div>
+                      <p className="fexp-note">
+                        {lang === 'PT'
+                          ? 'Este material possui informações de negócio restritas. Entre em contato para ver outros exemplos.'
+                          : 'This material contains restricted business information. Get in touch to see other examples.'}
+                      </p>
+                    </div>
                   </div>
                 </div>
               </div>
