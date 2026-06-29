@@ -1,36 +1,35 @@
 'use client';
 
 import * as THREE from 'three';
-import { Suspense, useEffect, useRef, useState } from 'react';
-import { Canvas, extend, useFrame, useThree } from '@react-three/fiber';
+import { Suspense, useEffect, useRef } from 'react';
+import { Canvas, useFrame } from '@react-three/fiber';
 import { useTexture } from '@react-three/drei';
-import { MeshLineGeometry, MeshLineMaterial } from 'meshline';
-
-extend({ MeshLineGeometry, MeshLineMaterial });
-
-// meshline custom elements for TS/JSX
-declare module '@react-three/fiber' {
-  interface ThreeElements {
-    meshLineGeometry: object;
-    meshLineMaterial: object;
-  }
-}
 
 // Card matches Figma node 103:11096 (372 x 584); texture is the same aspect.
 const CARD_W = 3.2;
 const CARD_H = (CARD_W * 1752) / 1116; // ~5.02
 
-// Pivot sits just above the top edge so the cord enters from the top of frame.
-const PIVOT = new THREE.Vector3(0, 3.3, 0);
-const ROPE_LEN = PIVOT.y; // pivot -> card center at rest (card centered, y=0)
-const DURATION = 2; // seconds; animation ends after this
+// Strap width = 36px relative to the 372px-wide card art (same ratio as Figma).
+const STRAP_W = (36 / 372) * CARD_W;
+const PX = STRAP_W / 36; // world units per design pixel
+const BORDER = 2 * PX; // 2px ink border around the strap
+const INK = '#0A0A0A'; // var(--color-ink)
+// How far below the card's top edge the clip slot sits (~20px of the 584 art).
+const CLIP_DEPTH = (20 / 584) * CARD_H;
+
+// Canvas is extended upward (CSS) to reach the topbar, so the pivot sits near
+// the top of the frame (topbar level) and the card hangs lower, in the hero.
+const PIVOT = new THREE.Vector3(0, 3.5, 0);
+const ROPE_LEN = 3.98; // pivot -> card center at rest (card center ~ -0.48)
+// Strap runs from the pivot down to the card hole; +1px so it ends in the hole.
+const STRAP_LEN = ROPE_LEN - CARD_H / 2 + CLIP_DEPTH + 1 * PX;
 
 export default function Lanyard() {
   return (
     <Canvas
       className="lanyard-canvas"
       dpr={[1, 2]}
-      camera={{ position: [0, 0, 13.3], fov: 25 }}
+      camera={{ position: [0, 0, 15.5], fov: 25 }}
       gl={{ alpha: true, antialias: true }}
     >
       <ambientLight intensity={1.2} />
@@ -43,8 +42,7 @@ export default function Lanyard() {
 
 function Band() {
   const card = useRef<THREE.Group>(null);
-  const band = useRef<THREE.Mesh>(null);
-  const { width, height } = useThree((s) => s.size);
+  const strap = useRef<THREE.Group>(null);
 
   const texture = useTexture('/images/id_card.png');
 
@@ -53,66 +51,54 @@ function Band() {
     texture.anisotropy = 16;
   }, [texture]);
 
-  const [curve] = useState(
-    () =>
-      new THREE.CatmullRomCurve3([
-        new THREE.Vector3(),
-        new THREE.Vector3(),
-        new THREE.Vector3(),
-      ]),
-  );
-
   const start = useRef<number | null>(null);
 
   const apply = (theta: number) => {
-    if (!card.current) return;
+    if (!card.current || !strap.current) return;
 
     // Card center swings on a pendulum hanging from PIVOT.
-    const cx = PIVOT.x + ROPE_LEN * Math.sin(theta);
-    const cy = PIVOT.y - ROPE_LEN * Math.cos(theta);
-    card.current.position.set(cx, cy, 0);
+    card.current.position.set(
+      PIVOT.x + ROPE_LEN * Math.sin(theta),
+      PIVOT.y - ROPE_LEN * Math.cos(theta),
+      0,
+    );
     card.current.rotation.z = theta;
 
-    // Cord runs from the card's clip slot (top center) up to the pivot.
-    // +0.15 lets the cord tip tuck into the clip; z is behind the card so the
-    // card occludes the tip (reads as inserted into the lanyard hole).
-    const r = ROPE_LEN - CARD_H / 2 + 0.15;
-    const topX = PIVOT.x + r * Math.sin(theta);
-    const topY = PIVOT.y - r * Math.cos(theta);
-
-    curve.points[0].set(topX, topY, 0);
-    curve.points[1].set((topX + PIVOT.x) / 2, (topY + PIVOT.y) / 2, 0);
-    curve.points[2].copy(PIVOT);
-
-    const geo = band.current?.geometry as unknown as {
-      setPoints: (pts: THREE.Vector3[]) => void;
-    };
-    geo?.setPoints(curve.getPoints(32));
+    // Strap is a straight band from the pivot toward the clip; it rotates with
+    // the swing. Its midpoint sits halfway down that radial line.
+    strap.current.position.set(
+      PIVOT.x + (STRAP_LEN / 2) * Math.sin(theta),
+      PIVOT.y - (STRAP_LEN / 2) * Math.cos(theta),
+      0.06,
+    );
+    strap.current.rotation.z = theta;
   };
 
   useFrame((state) => {
     if (start.current === null) start.current = state.clock.elapsedTime;
     const t = state.clock.elapsedTime - start.current;
 
-    // Damped pendulum: small wobble (left/right) then settles to center. After
-    // DURATION it stays clamped at center (animation ends, cord stays glued).
-    const theta =
-      t >= DURATION ? 0 : 0.3 * Math.exp(-2.4 * t) * Math.cos(6.2 * t);
+    // Damped swing: left, right, gentle decreasing swings, naturally slowing to
+    // center. No clamp — the exponential drives both amplitude and speed to ~0
+    // (settled by ~7s), so the card never stops abruptly.
+    const theta = -0.3 * Math.exp(-0.6 * t) * Math.sin(2.2 * t);
     apply(theta);
   });
 
   return (
     <>
-      {/* Cord behind the card so its tip tucks into the clip slot. */}
-      <mesh ref={band} position={[0, 0, -0.05]}>
-        <meshLineGeometry />
-        <meshLineMaterial
-          color="#6d6d6d"
-          resolution={[width, height]}
-          lineWidth={0.3}
-          toneMapped={false}
-        />
-      </mesh>
+      {/* Strap: flat band with a 2px ink border, in front so it stays visible
+          down into the card hole. Outline plane behind = the border. */}
+      <group ref={strap}>
+        <mesh>
+          <planeGeometry args={[STRAP_W + 2 * BORDER, STRAP_LEN + 2 * BORDER]} />
+          <meshBasicMaterial color={INK} toneMapped={false} side={THREE.DoubleSide} />
+        </mesh>
+        <mesh position={[0, 0, 0.01]}>
+          <planeGeometry args={[STRAP_W, STRAP_LEN]} />
+          <meshBasicMaterial color="#6d6d6d" toneMapped={false} side={THREE.DoubleSide} />
+        </mesh>
+      </group>
 
       <group ref={card}>
         <mesh>

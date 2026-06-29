@@ -214,15 +214,17 @@
   position: relative;
   overflow: visible;
 }
+.br .hero .badge-col { --cord-top: 104px; }
 .br .hero .lanyard-canvas {
   position: absolute;
-  top: 0;
+  top: calc(-1 * var(--cord-top));
   left: -30%;
   width: 160% !important;
-  height: 100% !important;
+  height: calc(100% + var(--cord-top)) !important;
   display: block;
   pointer-events: none;
   touch-action: none;
+  z-index: 0; /* stays under the sticky topbar (z 100) -> cord vem dela */
 }
 .br .hero .photo-col {
   display: flex;
