@@ -28,6 +28,9 @@ export default function Lanyard({ lang = 'PT' }: { lang?: 'PT' | 'EN' }) {
   return (
     <Canvas
       className="lanyard-canvas"
+      // R3F sets pointer-events:auto inline on its wrapper div, which beats the
+      // stylesheet rule; pass it inline here so touch scroll passes through.
+      style={{ pointerEvents: 'none' }}
       dpr={[1, 2]}
       camera={{ position: [0, 0, 15.5], fov: 25 }}
       gl={{ alpha: true, antialias: true }}

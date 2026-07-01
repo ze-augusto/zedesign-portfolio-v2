@@ -83,6 +83,18 @@ const WHAT_MEDIA: ({ src: string; bg: string; w: number; h: number; cover?: bool
   { src: '/images/Como_trabalho_Validacao.png', bg: '#28292a', w: 1470, h: 833, cover: true },
 ];
 
+// Precarregamento em background, em fases. Fase espera a anterior terminar, então
+// o crachá (1ª imagem da página) nunca disputa banda com o resto. Dentro da fase,
+// as imagens carregam em paralelo. Ordem pedida: crachá → cards "Como trabalho"
+// → fotos "Um pouco do que faço".
+const PRELOAD_COMO = WHAT_MEDIA.filter(Boolean).map((m) => m!.src);
+const PRELOAD_UMPOUCO = [
+  ...[1, 2, 3, 4, 5, 6, 7].map((n) => `/images/prototipo0${n}.png`),
+  ...Array.from({ length: 11 }, (_, i) => `/images/mobile${String(i + 1).padStart(2, '0')}.png`),
+  ...[1, 2, 3, 4, 5, 6, 7].map((n) => `/images/documentacao0${n}.png`),
+  '/images/logo01.png', '/images/logo02.png', '/images/logo03.png', '/images/logo04.png',
+];
+
 export default function HomePage() {
   const { lang, t, toggle } = useI18n('PT');
   const [copied, setCopied] = useState(false);
@@ -364,6 +376,27 @@ export default function HomePage() {
     });
     return () => cancelAnimationFrame(id);
   }, [openStep, closing, isMobile]);
+
+  // Precarrega imagens abaixo da dobra em ordem: crachá → "Como trabalho" →
+  // "Um pouco do que faço". Fases sequenciais; dentro da fase, em paralelo.
+  useEffect(() => {
+    let cancelled = false;
+    const load = (src: string) =>
+      new Promise<void>((resolve) => {
+        const img = new Image();
+        img.onload = img.onerror = () => resolve();
+        img.src = src;
+      });
+    (async () => {
+      const cracha = lang === 'EN' ? '/images/id_card_en.png' : '/images/id_card.png';
+      await load(cracha);
+      if (cancelled) return;
+      await Promise.all(PRELOAD_COMO.map(load));
+      if (cancelled) return;
+      await Promise.all(PRELOAD_UMPOUCO.map(load));
+    })();
+    return () => { cancelled = true; };
+  }, [lang]);
 
   const handleCopyEmail = async () => {
     await navigator.clipboard.writeText(CONTACT.email);
@@ -716,6 +749,7 @@ export default function HomePage() {
                         alt={copy === 0 ? `Documentação ${n}` : ''}
                         width={d.w}
                         height={d.h}
+                        loading="lazy"
                         draggable={false}
                       />
                     </div>
