@@ -141,7 +141,7 @@
 .br .drawer nav a:hover { color: var(--br-yellow); }
 
 /* ─── Hero ─── */
-.br .hero { border-bottom: 3px solid var(--br-fg); background: var(--br-bg); }
+.br .hero { background: var(--br-bg); display: flex; flex-direction: column; }
 .br .hero .top-row {
   display: flex;
   gap: 32px;
@@ -296,7 +296,6 @@
 .br .portband {
   background: var(--br-yellow);
   padding: 64px 48px;
-  border-bottom: 3px solid var(--br-fg);
 }
 .br .portband h2 {
   font-size: 48px;
@@ -324,7 +323,7 @@
 }
 
 /* ─── Section base ─── */
-.br .sec { padding: 64px 56px; border-bottom: 3px solid var(--br-fg); }
+.br .sec { padding: 64px 56px; }
 .br .sec .head { display: flex; align-items: baseline; gap: 16px; margin-bottom: 36px; }
 .br .sec .head .n {
   font-family: var(--font-jetbrains-mono), ui-monospace, monospace;
@@ -859,6 +858,13 @@
   letter-spacing: 0.16em;
 }
 
+/* Tablet + desktop: hero fills the viewport below the sticky topbar.
+   --top-h is published from JS (topbar height, live per breakpoint/resize). */
+@media (min-width: 768px) {
+  .br .hero { min-height: calc(100dvh - var(--top-h, 0px)); }
+  .br .hero .top-row { flex: 1; }
+}
+
 /* ═══════════════════════════════════════════════════════════════
    RESPONSIVE — Desktop large (≥1440px)
    More breathing room, slightly larger headlines.
@@ -978,13 +984,30 @@
     gap: 6px;
   }
 
-  /* Hero — stack column (text first, photo below) */
-  .br .hero .top-row { flex-direction: column; padding: 24px 20px 0; gap: 24px; }
-  .br .hero .left { padding-top: 0; gap: 12px; }
-  .br .hero .subtitle { font-size: 24px; line-height: 1.4; }
-  .br .hero .name { font-size: 48px; line-height: 1.05; }
+  /* Hero — stack column: name → "product designer" → crachá → intro.
+     .left and .desc flatten (display:contents) so headline/role/intro become
+     top-row siblings and the badge can slot right after the role. */
+  .br .hero { margin-bottom: 24px; }
+  .br .hero .top-row { flex-direction: column; padding: 56px 20px 0; gap: 24px; }
+  .br .hero .left { display: contents; }
+  .br .hero .desc { display: contents; }
+  .br .hero .headline { order: 1; }
+  .br .hero .role { order: 2; z-index: 2; } /* stays above the cord */
+  /* Yellow mark grows rightward only, right edge landing at 66vw. Its left edge
+     is 8px before .role-mark (--mark-left, from JS), so subtract that offset. */
+  .br .hero .role-mark::before {
+    left: -8px;
+    right: auto;
+    width: calc(66vw - var(--mark-left, 0px) + 8px);
+  }
+  /* +32px breathing room above the badge; z-index just under .role so the
+     lanyard cord reads as passing behind the yellow "product designer" mark. */
+  .br .hero .badge-col { order: 3; margin-top: 32px; z-index: 1; }
+  .br .hero .intro { order: 4; }
+  .br .hero .subtitle { font-size: 28px; line-height: 1.4; }
+  .br .hero .name { font-size: 56px; line-height: 1.1; }
   .br .hero .desc { padding: 8px 0; gap: 32px; }
-  .br .hero .role { font-size: 20px; line-height: 1.4; }
+  .br .hero .role { font-size: 22px; line-height: 1.4; }
   .br .hero .intro-p { font-size: 16px; }
   .br .hero .photo-col { width: 100%; }
   .br .hero .badge-col { width: 100%; height: 460px; }

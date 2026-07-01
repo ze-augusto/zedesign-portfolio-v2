@@ -78,6 +78,8 @@ export default function HomePage() {
   const [bandIn, setBandIn] = useState(false);
   const stepCount = t.what.items.length;
 
+  const topRef = useRef<HTMLElement>(null);
+  const roleMarkRef = useRef<HTMLSpanElement>(null);
   const bandRef = useRef<HTMLElement>(null);
   const boardRef = useRef<HTMLDivElement>(null);
   const expRef = useRef<HTMLDivElement>(null);
@@ -194,6 +196,33 @@ export default function HomePage() {
     return () => mq.removeEventListener('change', apply);
   }, []);
 
+  // Publish the sticky topbar's height as --top-h so the hero can fill exactly
+  // the viewport below it (calc(100dvh - --top-h)). Height shifts per breakpoint,
+  // on resize and after fonts load, so track it live.
+  useIsoLayoutEffect(() => {
+    const el = topRef.current;
+    if (!el) return;
+    const apply = () =>
+      document.documentElement.style.setProperty('--top-h', `${el.offsetHeight}px`);
+    apply();
+    const ro = new ResizeObserver(apply);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
+
+  // Publish the "product designer" mark's left offset (viewport px) as
+  // --mark-left. On mobile the yellow rectangle grows only rightward to 66vw,
+  // so its width = 66vw minus whatever space sits to its left.
+  useIsoLayoutEffect(() => {
+    const el = roleMarkRef.current;
+    if (!el) return;
+    const apply = () =>
+      el.style.setProperty('--mark-left', `${el.getBoundingClientRect().left}px`);
+    apply();
+    window.addEventListener('resize', apply);
+    return () => window.removeEventListener('resize', apply);
+  }, [lang]);
+
   // Reveal the manifesto marks when the band scrolls into view (one-shot).
   useEffect(() => {
     const el = bandRef.current;
@@ -233,7 +262,7 @@ export default function HomePage() {
   return (
     <div className="br">
       {/* Topbar */}
-      <header className="top">
+      <header className="top" ref={topRef}>
         <button
           className="burger"
           onClick={() => setMenuOpen(true)}
@@ -322,7 +351,7 @@ export default function HomePage() {
             <div className="desc">
               <p className="role">
                 <span className="role-arrow" aria-hidden="true">↳</span>
-                <span className="role-mark">{t.hero.role}</span>
+                <span className="role-mark" ref={roleMarkRef}>{t.hero.role}</span>
               </p>
               <div className="intro">
                 {t.hero.intro.map((p, i) => (
