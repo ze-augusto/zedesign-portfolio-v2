@@ -13,12 +13,12 @@ export interface Translations {
   hero: { subtitle: string; nameShort: string; role: string; intro: { lead: string; em: string }[]; location: string; available: string; contactCta: string; contactSuffix: string };
   bio: { title: string; p1: string; p2: string; p3: string };
   what: { title: string; items: WhatItem[] };
-  process: { title: string; subtitle: string; steps: ProcessStep[] };
+  process: { title: string; steps: ProcessStep[] };
   experience: { title: string; items: ExperienceItem[] };
   education: { title: string; items: EducationItem[] };
   skills: { title: string; groups: SkillGroup[] };
   langs: { title: string; items: LangItem[] };
-  contact: { title: string; cta: string; sub: string; cv: string; portfolio: string };
+  contact: { title: string; cta: string; cv: string; portfolio: string };
   footer: { sig: string };
 }
 
@@ -52,13 +52,12 @@ export const PT: Translations = {
       { k: 'Fluxogramas', v: 'Ao conectar jornadas de usuário com blueprints de serviço, mapeio como as possíveis ações na tela refletem no sistema como um todo.' },
       { k: 'Wireframes', v: 'Ao criar estruturas de média fidelidade, valido principalmente a hierarquia de componentes e o escopo prático da solução diretamente com a equipe.' },
       { k: 'Alta fidelidade e Prototipação', v: 'Ao modelar interfaces responsivas e nativas, construo protótipos interativos que simulam com precisão o comportamento real do produto.' },
-      { k: 'Testes de usabilidade', v: 'Ao aplicar testes qualitativos e quantitativos com usuários reais, identifico gargalos na jornada e refino a usabilidade do fluxo com base em dados de comportamento.' },
+      { k: 'Testes de usabilidade', v: 'Ao aplicar testes qualitativos e quantitativos com usuários reais, busco identificar gargalos na jornada e refino a usabilidade do fluxo com base em dados de comportamento.' },
       { k: 'Validação com devs', v: 'Ao realizar o handoff para a equipe dev, reviso a lógica dos componentes e as regras de banco de dados para mitigar riscos e garantir a viabilidade do código.' },
     ],
   },
   process: {
     title: 'Como trabalho',
-    subtitle: 'Um produto, do início ao fim. Não entrego tela — entrego decisão validada.',
     steps: [
       { n: '01', k: 'Requisitos', v: 'Levanto requisitos com stakeholders e usuários. Mapeio o processo institucional antes de qualquer pixel.' },
       { n: '02', k: 'Fluxogramas', v: 'Desenho a jornada do usuário e os fluxos do sistema — onde decisão acontece, onde dados entram e saem.' },
@@ -132,11 +131,10 @@ export const PT: Translations = {
   contact: {
     title: 'Contato',
     cta: 'Vamos conversar?',
-    sub: 'Aberto a oportunidades de Product Design — full-time e freelance.',
     cv: 'Baixar CV (PDF)',
     portfolio: 'Ver trabalhos',
   },
-  footer: { sig: 'Desenhado e codado por José em Fortaleza · 2026' },
+  footer: { sig: 'Desenhado e implementado por Zé' },
 };
 
 export const EN: Translations = {
@@ -175,7 +173,6 @@ export const EN: Translations = {
   },
   process: {
     title: 'How I work',
-    subtitle: "A product, beginning to end. I don't ship screens — I ship validated decisions.",
     steps: [
       { n: '01', k: 'Requirements', v: 'I gather requirements with stakeholders and users. I map the institutional process before drawing any pixel.' },
       { n: '02', k: 'Flowcharts', v: 'I map user journeys and system flows — where decisions happen, where data enters and leaves.' },
@@ -249,11 +246,10 @@ export const EN: Translations = {
   contact: {
     title: 'Contact',
     cta: "Let's talk?",
-    sub: 'Open to Product Design opportunities — full-time and freelance.',
     cv: 'Download CV (PDF)',
     portfolio: 'See work',
   },
-  footer: { sig: 'Designed and coded by José in Fortaleza · 2026' },
+  footer: { sig: 'Designed and implemented by Zé' },
 };
 
 export const CONTACT = {

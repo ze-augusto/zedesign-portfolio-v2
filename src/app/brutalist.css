@@ -30,25 +30,27 @@
   align-items: stretch;
   background: var(--br-fg);
   color: var(--br-bg);
+  padding: 0 32px;
   position: sticky;
   top: 0;
   z-index: 100;
 }
 .br .top .lhs { display: flex; }
 .br .top .mark {
-  padding: 16px 28px;
-  font-weight: 800;
+  padding: 16px;
+  font-weight: 700;
   font-size: 14px;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
+  line-height: 20px;
+  letter-spacing: 0;
   border-right: 2px solid rgba(235,234,233,0.2);
 }
 .br .top .nav { display: flex; }
 .br .top .nav a {
-  padding: 16px 24px;
+  padding: 16px 40px;
   font-size: 14px;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
+  font-weight: 700;
+  line-height: 20px;
+  letter-spacing: 0;
   border-right: 0.5px solid rgba(235,234,233,0.15);
   color: var(--br-bg);
   text-decoration: none;
@@ -62,12 +64,13 @@
   color: var(--br-bg);
   border: none;
   border-left: 0.5px solid rgba(235,234,233,0.15);
-  padding: 16px 22px;
+  padding: 16px;
   font: inherit;
   font-size: 14px;
   font-weight: 700;
+  line-height: 20px;
   cursor: pointer;
-  letter-spacing: 0.06em;
+  letter-spacing: 0;
   display: inline-flex;
   align-items: center;
   gap: 8px;
@@ -342,23 +345,8 @@
 
 /* ─── How I work — interactive flowchart ─── */
 .br .flow { background: var(--br-fg); color: var(--br-bg); }
-.br .flow .head { margin-bottom: 16px; }
+.br .flow .head { margin-bottom: 44px; }
 .br .flow .head h2 { color: var(--br-bg); }
-.br .flow .flow-sub {
-  font-size: 20px;
-  line-height: 1.5;
-  font-weight: 600;
-  max-width: 680px;
-  color: var(--br-bg);
-}
-.br .flow .flow-hint {
-  font-family: var(--font-jetbrains-mono), ui-monospace, monospace;
-  font-size: 12px;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: var(--br-mute);
-  margin: 12px 0 44px;
-}
 
 /* board — grid and expanded view share the same box */
 .br .flow .fboard { position: relative; }
@@ -370,7 +358,9 @@
 }
 .br .flow .frow {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  /* minmax(0,1fr) so every card is exactly 1/3 of the row — long unbreakable
+     titles can't inflate a column and desync widths between rows. */
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 24px;
 }
 /* while a step is expanded the grid fades out but stays in flow so the
@@ -407,7 +397,6 @@
 .br .flow .fcard:hover { border-color: var(--br-yellow); transform: translateY(-3px); }
 .br .flow .fcard:focus-visible { outline: 3px solid var(--br-yellow); outline-offset: 3px; }
 .br .flow .fnum {
-  font-family: var(--font-jetbrains-mono), ui-monospace, monospace;
   font-size: 15px;
   font-weight: 700;
   letter-spacing: 0.08em;
@@ -490,31 +479,12 @@
   overflow: hidden;
 }
 
-/* ghost icon — visible during the grow (mirrors the card), fades out on reveal */
-.br .flow .fexp-ghost {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--br-bg);
-  opacity: 0.12;
-  pointer-events: none;
-  transition: opacity 0.3s ease;
-}
-.br .flow .fexp-ghost svg { width: 38%; max-width: 200px; height: auto; }
-.br .flow .fexpanded.revealed .fexp-ghost { opacity: 0; }
-
-/* content fades/slides in once the grow finishes */
+/* real content — present from the first frame of the grow (no fade-in) */
 .br .flow .fexp-body {
   display: flex;
   flex: 1;
   min-height: 0;
-  opacity: 0;
-  transform: translateY(10px);
-  transition: opacity 0.3s ease, transform 0.3s ease;
 }
-.br .flow .fexpanded.revealed .fexp-body { opacity: 1; transform: none; transition-delay: 0.09s; }
 
 /* thin paper accent bar across the top edge (brutalist double-line) */
 .br .flow .fexp-accent {
@@ -525,8 +495,8 @@
   background: var(--br-bg);
 }
 
-/* replica of a grid card, shown only while the box collapses on close so the
-   landing on the real card underneath is seamless (same ink bg + paper border) */
+/* replica of a grid card, shown only while the box collapses on close so it
+   lands seamlessly on the real card underneath (same ink bg + paper text) */
 .br .flow .fexp-preview {
   position: absolute;
   inset: 0;
@@ -535,12 +505,10 @@
   flex-direction: column;
   justify-content: space-between;
   padding: 22px 24px;
+  background: var(--br-fg);
   color: var(--br-bg);
   overflow: hidden;
 }
-.br .flow .fboard[data-closing='true'] .fexp-accent,
-.br .flow .fboard[data-closing='true'] .fexp-body,
-.br .flow .fboard[data-closing='true'] .fexp-ghost { display: none; }
 
 .br .flow .fexp-ctrl { display: flex; gap: 10px; justify-content: flex-end; flex-shrink: 0; }
 .br .flow .fexp-btn {
@@ -567,13 +535,40 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #fff;
+  background: #e6e6e6;
   color: var(--br-fg);
   padding: 40px;
   border-right: 3px solid var(--br-bg);
 }
 .br .flow .fexp-ico { width: 132px; height: 132px; display: block; }
 .br .flow .fexp-ico svg { width: 100%; height: 100%; display: block; }
+.br .flow .fexp-img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+  user-select: none;
+}
+/* cover — image fills the panel width edge-to-edge (only vertical padding) */
+.br .flow .fexp-media-cover { padding: 40px 0; }
+.br .flow .fexp-media-cover .fexp-img {
+  width: 100%;
+  height: 100%;
+  max-width: none;
+  max-height: none;
+  object-fit: cover;
+}
+/* fill-bottom — image spans full width, sits flush to the bottom edge, and
+   keeps its aspect ratio so nothing is cropped (may leave a gap at the top) */
+.br .flow .fexp-media-fillbottom { padding: 0; align-items: flex-end; justify-content: stretch; }
+.br .flow .fexp-media-fillbottom .fexp-img {
+  width: 100%;
+  height: auto;
+  max-width: none;
+  max-height: none;
+  object-fit: contain;
+  display: block;
+}
 .br .flow .fexp-text {
   flex: 1;
   min-width: 0;
@@ -592,7 +587,6 @@
 }
 .br .flow .fexp-text-main { display: flex; flex-direction: column; gap: 24px; }
 .br .flow .fexp-count {
-  font-family: var(--font-jetbrains-mono), ui-monospace, monospace;
   font-size: 13px;
   font-weight: 700;
   letter-spacing: 0.14em;
@@ -614,7 +608,8 @@
   .br .flow .fgrid,
   .br .flow .fexpanded,
   .br .flow .fexp-body,
-  .br .flow .fexp-ghost { transition: none; }
+  .br .flow .fexp-preview,
+  .br .flow .facc-clip { transition: none !important; }
 }
 
 /* ─── Work — infinite marquee ─── */
@@ -630,7 +625,6 @@
   line-height: 0.95;
   font-weight: 900;
   letter-spacing: -0.03em;
-  text-transform: uppercase;
 }
 .br .work .marquee { overflow: hidden; }
 .br .work .track {
@@ -797,7 +791,7 @@
   flex-direction: column;
   gap: 24px;
 }
-.br .contact .ctitle { font-size: 80px; font-weight: 900; letter-spacing: -0.04em; line-height: 100px; text-transform: uppercase; margin: 0; }
+.br .contact .ctitle { font-size: 80px; font-weight: 900; letter-spacing: -0.04em; line-height: 100px; margin: 0; }
 .br .contact .ccontent { display: flex; flex-direction: column; gap: 16px; }
 .br .contact .csub { font-size: 18px; font-weight: 500; line-height: 24px; margin: 0; }
 .br .contact .cinfo { display: flex; flex-direction: column; gap: 24px; max-width: 608px; }
@@ -818,7 +812,6 @@
 .br .contact .crow:hover .cval { text-decoration: underline; text-underline-offset: 3px; }
 .br .contact .ctext { display: flex; flex-direction: column; gap: 3px; align-items: flex-start; }
 .br .contact .clabel {
-  font-family: var(--font-jetbrains-mono), ui-monospace, monospace;
   font-size: 14px;
   font-weight: 500;
   line-height: 20px;
@@ -915,8 +908,6 @@
   .br .sec .head h2 { font-size: 44px; }
 
   /* Flow — tighter (still 3 cols) */
-  .br .flow .flow-sub { font-size: 18px; }
-  .br .flow .flow-hint { margin: 12px 0 36px; }
   .br .flow .frow { gap: 16px; }
   .br .flow .fcard { aspect-ratio: 5 / 4; padding: 18px; }
   .br .flow .fcard-title { font-size: 19px; }
@@ -973,7 +964,7 @@
    ═══════════════════════════════════════════════════════════════ */
 @media (max-width: 767px) {
   /* Topbar — burger + lang */
-  .br .top { flex-direction: row; align-items: stretch; }
+  .br .top { flex-direction: row; align-items: stretch; padding: 0; }
   .br .top .lhs { display: none; }
   .br .burger { display: inline-flex; padding: 14px 18px; }
   .br .top .lang { display: flex; margin-left: auto; }
@@ -1035,9 +1026,7 @@
   .br .sec .head h2 { font-size: 32px; line-height: 1; }
 
   /* Flow — 1 col stacked nodes; expanded view stacks media over text */
-  .br .flow .head { margin-bottom: 12px; }
-  .br .flow .flow-sub { font-size: 16px; }
-  .br .flow .flow-hint { font-size: 11px; margin: 10px 0 28px; }
+  .br .flow .head { margin-bottom: 32px; }
   .br .flow .fgrid { gap: 12px; }
   .br .flow .frow { grid-template-columns: 1fr; gap: 12px; }
   .br .flow .fcard { aspect-ratio: auto; min-height: 96px; padding: 18px 20px; }
@@ -1052,13 +1041,36 @@
   .br .flow .fexp-btn { width: 42px; height: 42px; }
   .br .flow .fexp-ctrl { gap: 8px; }
   .br .flow .fexp-body { flex-direction: column; }
-  .br .flow .fexp-media { padding: 32px; border-right: none; border-bottom: 3px solid var(--br-bg); }
+  /* Stacked on mobile: media and text size to their own content (no fixed
+     board height to split between them) so text is never clipped. */
+  .br .flow .fexp-media { flex: none; padding: 32px; border-right: none; border-bottom: 3px solid var(--br-bg); }
+  /* fill-bottom keeps zero padding on mobile so the image stays flush to the edges */
+  .br .flow .fexp-media-fillbottom { padding: 0; }
+  /* cover → on mobile show the full image flush to the container edges (no crop,
+     no padding): full width, natural height, so it touches all four borders. */
+  .br .flow .fexp-media-cover { padding: 0; }
+  .br .flow .fexp-media-cover .fexp-img {
+    width: 100%;
+    height: auto;
+    object-fit: contain;
+  }
+  .br .flow .fexp-text { flex: none; }
+  .br .flow .fexp-text-body { flex: none; }
   .br .flow .fexp-ico { width: 88px; height: 88px; }
   .br .flow .fexp-text { padding: 24px 20px; }
   .br .flow .fexp-desc { font-size: 16px; line-height: 26px; }
   .br .flow .fexp-text-body { gap: 20px; }
   .br .flow .fexp-note { font-size: 14px; line-height: 26px; }
   .br .flow .fexp-preview { padding: 18px 20px; }
+  /* Mobile accordion: grid stays visible while a step is open, and the open
+     step expands inline right below its card. */
+  .br .flow .fboard[data-open='true'] .fgrid { opacity: 1; transform: none; pointer-events: auto; }
+  .br .flow .facc { width: 100%; }
+  .br .flow .facc .fexp-card { height: auto; }
+  /* Accordion open/close/step: the clip's pixel height is morphed in JS so a
+     step-change grows/shrinks from the previous card's size instead of reopening
+     from zero. Overflow hidden clips content while it's shorter than natural. */
+  .br .flow .facc-clip { overflow: hidden; }
 
   /* Work marquee */
   .br .work { padding: 36px 0; }

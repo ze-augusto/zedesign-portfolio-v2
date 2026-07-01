@@ -67,6 +67,22 @@ const WHAT_ICONS = [
   </svg>,
 ];
 
+// Imagem da zona de mídia do card expandido, por etapa. Etapa sem imagem
+// cai no ícone (WHAT_ICONS). bg = fundo do painel (varia por imagem no Figma).
+// cover: imagem preenche a largura encostando nas bordas laterais (só padding
+// vertical), com object-fit cover — como no Figma. Padrão: contain, com padding.
+// w/h are the images' natural pixel sizes — passed to <img> so the browser
+// reserves the aspect-ratio box before the pixels load, keeping the mobile
+// accordion's measured height correct (no snap when the image finishes loading).
+const WHAT_MEDIA: ({ src: string; bg: string; w: number; h: number; cover?: boolean; fillBottom?: boolean } | undefined)[] = [
+  { src: '/images/Como_trabalho_Requisitos.png', bg: '#ececec', w: 3700, h: 2112 },
+  { src: '/images/Como_trabalho_Fluxogramas.png', bg: '#ffffff', w: 1556, h: 1399 },
+  { src: '/images/Como_trabalho_Wireframes.png', bg: '#e6e6e6', w: 1050, h: 944 },
+  { src: '/images/Como_trabalho_Prototipos.png', bg: '#2b2b2b', w: 1607, h: 1473, fillBottom: true },
+  { src: '/images/Como_trabalho_Testes.png', bg: '#ffffff', w: 1932, h: 1776, fillBottom: true },
+  { src: '/images/Como_trabalho_Validacao.png', bg: '#28292a', w: 1470, h: 833, cover: true },
+];
+
 export default function HomePage() {
   const { lang, t, toggle } = useI18n('PT');
   const [copied, setCopied] = useState(false);
@@ -85,6 +101,16 @@ export default function HomePage() {
   const expRef = useRef<HTMLDivElement>(null);
   const originRef = useRef<{ top: number; left: number; width: number; height: number } | null>(null);
   const openingRef = useRef(false);
+  // Mobile accordion height-morph: the open card's clip element, the last height
+  // it settled at (so a step-change morphs from it, not from zero), and a flag so
+  // the collapse-on-close transition isn't undone by the open effect's listener.
+  const accClipRef = useRef<HTMLDivElement | null>(null);
+  const prevAccH = useRef(0);
+  // Compact card height captured at open — the morph grows from / collapses to it
+  // so swapping compact↔expanded never jumps the layout by the compact's height.
+  const accBaseH = useRef(0);
+  const accClosing = useRef(false);
+  const ACC_EASE = 'height 0.6s cubic-bezier(0.4, 0, 0.2, 1)';
 
   // Card geometry relative to the board (so the expanded element can morph
   // from the card's exact position/size to filling the whole board).
@@ -94,7 +120,19 @@ export default function HomePage() {
     return { top: c.top - b.top, left: c.left - b.left, width: c.width, height: c.height };
   };
 
+  // Desktop uses a FLIP overlay that grows to fill the board; mobile expands the
+  // tapped card inline (accordion) so the other cards stay visible.
+  const isMobile = cols === 1;
+
   const openCard = (i: number, e: React.MouseEvent) => {
+    if (isMobile) {
+      // Grow from the tapped compact card's height so the slot doesn't jump.
+      const h = (e.currentTarget as HTMLElement).getBoundingClientRect().height;
+      accBaseH.current = h;
+      if (openStep === null) prevAccH.current = h;
+      setOpenStep((prev) => (prev === i ? null : i));
+      return; // morph is driven by the mobile effect below
+    }
     if (openStep !== null) return;
     originRef.current = getRect(e.currentTarget as Element);
     openingRef.current = true;
@@ -111,11 +149,31 @@ export default function HomePage() {
   };
 
   const closeCard = () => {
+    if (isMobile) {
+      // Collapse the open card's clip height → 0, then unmount once done.
+      const clip = accClipRef.current;
+      const base = accBaseH.current;
+      if (clip) {
+        accClosing.current = true;
+        const from = clip.getBoundingClientRect().height;
+        clip.style.transition = 'none';
+        clip.style.height = `${from}px`;
+        void clip.offsetHeight;
+        clip.style.transition = ACC_EASE;
+        // Collapse only down to the compact card's height; unmounting then swaps
+        // in the real compact card at the same size, so nothing jumps.
+        clip.style.height = `${base}px`;
+      }
+      prevAccH.current = 0;
+      window.setTimeout(() => { accClosing.current = false; setOpenStep(null); }, 620);
+      return;
+    }
     const el = expRef.current;
     const o = originRef.current;
     if (!el || !o) { setOpenStep(null); return; }
     setRevealed(false);
     setClosing(true);
+    el.style.transition = ''; // restore the shared 0.5s CSS transition (open sets 1s)
     requestAnimationFrame(() => {
       el.style.top = `${o.top}px`;
       el.style.left = `${o.left}px`;
@@ -142,6 +200,34 @@ export default function HomePage() {
     const timer = setTimeout(finish, 600); // fallback when transitions are off
   };
 
+  // Mobile accordion: morph the clip height from where it last settled (0 on a
+  // fresh open, the previous card's height when stepping) to the new content's
+  // height. Runs in a layout effect so the pinned start height paints before the
+  // browser shows the freshly-mounted card at its natural size (no flash). After
+  // the morph, release to height:auto so late-loading images / resize can grow it.
+  useIsoLayoutEffect(() => {
+    if (!isMobile || openStep === null) return;
+    const clip = accClipRef.current;
+    if (!clip) return;
+    accClosing.current = false;
+    const target = clip.scrollHeight; // natural height of the new content
+    const from = prevAccH.current;
+    prevAccH.current = target;
+    clip.style.transition = 'none';
+    clip.style.height = `${from}px`;
+    void clip.offsetHeight; // reflow so the start height sticks
+    clip.style.transition = ACC_EASE;
+    clip.style.height = `${target}px`;
+    const done = (ev: TransitionEvent) => {
+      if (ev.propertyName !== 'height' || accClosing.current) return;
+      clip.style.transition = 'none';
+      clip.style.height = 'auto';
+      prevAccH.current = clip.getBoundingClientRect().height;
+    };
+    clip.addEventListener('transitionend', done);
+    return () => clip.removeEventListener('transitionend', done);
+  }, [openStep, isMobile, lang]);
+
   // FLIP expand: place the element on the card, then animate it to fill the board.
   useIsoLayoutEffect(() => {
     if (!openingRef.current || openStep === null) return;
@@ -156,7 +242,9 @@ export default function HomePage() {
     el.style.width = `${o.width}px`;
     el.style.height = `${o.height}px`;
     void el.offsetWidth; // force reflow so the start frame sticks
-    el.style.transition = '';
+    // Open grows at 1s — twice the shared 0.5s CSS transition (close resets it).
+    el.style.transition =
+      'top 1s cubic-bezier(0.22, 1, 0.36, 1), left 1s cubic-bezier(0.22, 1, 0.36, 1), width 1s cubic-bezier(0.22, 1, 0.36, 1), height 1s cubic-bezier(0.22, 1, 0.36, 1)';
     el.style.top = '0px';
     el.style.left = '0px';
     el.style.width = '100%';
@@ -171,7 +259,7 @@ export default function HomePage() {
     };
     const reveal = (ev: TransitionEvent) => { if (ev.propertyName === 'width') finish(); };
     el.addEventListener('transitionend', reveal);
-    const timer = setTimeout(finish, 620); // fallback when transitions are off
+    const timer = setTimeout(finish, 1120); // fallback when transitions are off
     return () => { el.removeEventListener('transitionend', reveal); clearTimeout(timer); };
   }, [openStep]);
 
@@ -253,10 +341,97 @@ export default function HomePage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [openStep, stepCount]);
 
+  // On open (and when stepping between cards), scroll the expanded content into
+  // view: on mobile the opened card's top aligns just below the sticky topbar;
+  // on tablet/desktop the board is centered in the viewport.
+  useEffect(() => {
+    if (openStep === null || closing) return;
+    const id = requestAnimationFrame(() => {
+      if (isMobile) {
+        const card = boardRef.current?.querySelector(`[data-card="${openStep}"]`) as HTMLElement | null;
+        if (!card) return;
+        const topH = topRef.current?.offsetHeight ?? 0;
+        // 24px breathing room between the sticky topbar and the card's top edge.
+        const y = window.scrollY + card.getBoundingClientRect().top - topH - 24;
+        window.scrollTo({ top: y, behavior: 'smooth' });
+      } else {
+        const board = boardRef.current;
+        if (!board) return;
+        const r = board.getBoundingClientRect();
+        const y = window.scrollY + r.top + r.height / 2 - window.innerHeight / 2;
+        window.scrollTo({ top: y, behavior: 'smooth' });
+      }
+    });
+    return () => cancelAnimationFrame(id);
+  }, [openStep, closing, isMobile]);
+
   const handleCopyEmail = async () => {
     await navigator.clipboard.writeText(CONTACT.email);
     setCopied(true);
     setTimeout(() => setCopied(false), 3000);
+  };
+
+  // Inner content of an expanded step (media + controls + text). Shared by the
+  // desktop FLIP overlay and the mobile inline accordion.
+  const renderExpContent = (step: number) => {
+    const media = WHAT_MEDIA[step];
+    return (
+      <div className="fexp-body">
+        {/* Media zone — image when the step has one, else the icon */}
+        <div
+          className={`fexp-media${media?.cover ? ' fexp-media-cover' : ''}${media?.fillBottom ? ' fexp-media-fillbottom' : ''}`}
+          style={media ? { background: media.bg } : undefined}
+        >
+          {media ? (
+            <img className="fexp-img" src={media.src} width={media.w} height={media.h} alt="" draggable={false} />
+          ) : (
+            <span className="fexp-ico" aria-hidden="true">{WHAT_ICONS[step]}</span>
+          )}
+        </div>
+        {/* Text zone — controls, meta/title/body and disclaimer */}
+        <div className="fexp-text">
+          <div className="fexp-ctrl">
+            <button
+              className="fexp-btn"
+              onClick={() => goToStep((step - 1 + stepCount) % stepCount)}
+              aria-label={lang === 'PT' ? 'Etapa anterior' : 'Previous step'}
+            >
+              <svg viewBox="0 0 24 24" fill="none"><path d="M15 6l-6 6 6 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>
+            </button>
+            <button
+              className="fexp-btn"
+              onClick={() => goToStep((step + 1) % stepCount)}
+              aria-label={lang === 'PT' ? 'Próxima etapa' : 'Next step'}
+            >
+              <svg viewBox="0 0 24 24" fill="none"><path d="M9 6l6 6-6 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>
+            </button>
+            <button
+              className="fexp-btn fexp-close"
+              onClick={closeCard}
+              aria-label={lang === 'PT' ? 'Fechar' : 'Close'}
+            >
+              <svg viewBox="0 0 24 24" fill="none"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>
+            </button>
+          </div>
+          <div className="fexp-text-body">
+            <div className="fexp-text-main">
+              <span className="fexp-count">{`0${step + 1} / 0${stepCount}`}</span>
+              <div className="fexp-heading">
+                <h3 className="fexp-title">{t.what.items[step].k}</h3>
+                <p className="fexp-desc">{t.what.items[step].v}</p>
+              </div>
+            </div>
+            {step === 1 && (
+              <p className="fexp-note">
+                {lang === 'PT'
+                  ? 'Este fluxo de jornada de usuário possui informações de negócio restritas. Entre em contato para ver outros exemplos.'
+                  : 'This user journey flow contains restricted business information. Get in touch to see other examples.'}
+              </p>
+            )}
+          </div>
+        </div>
+      </div>
+    );
   };
 
   return (
@@ -274,7 +449,7 @@ export default function HomePage() {
           </svg>
         </button>
         <div className="lhs">
-          <div className="mark">ZE — PRODUCT DESIGNER</div>
+          <div className="mark">Zé - Product Designer</div>
           <nav className="nav">
             <Link href="/" className="on">{t.nav.home}</Link>
             <Link href="/sobre">{t.nav.about}</Link>
@@ -364,7 +539,7 @@ export default function HomePage() {
             </div>
           </div>
           <div className="badge-col" aria-hidden="true">
-            <Lanyard />
+            <Lanyard lang={lang} />
           </div>
         </div>
       </section>
@@ -395,13 +570,10 @@ export default function HomePage() {
         <div className="head">
           <h2>{t.what.title}</h2>
         </div>
-        <p className="flow-sub">{t.process.subtitle}</p>
-        <p className="flow-hint">
-          {lang === 'PT' ? 'Clique em cada etapa para ver os detalhes' : 'Click each step to see the details'}
-        </p>
         <div className="fboard" data-open={openStep !== null} data-closing={closing} ref={boardRef}>
-          {/* Grid of step nodes — hidden while a step is expanded */}
-          <div className="fgrid" aria-hidden={openStep !== null}>
+          {/* Grid of step nodes — faded behind the FLIP overlay on desktop; on
+              mobile it stays visible and the open step expands inline (accordion) */}
+          <div className="fgrid" aria-hidden={openStep !== null && !isMobile}>
             {Array.from({ length: Math.ceil(stepCount / cols) }, (_, r) => {
               const start = r * cols;
               const row = t.what.items.slice(start, start + cols);
@@ -409,6 +581,21 @@ export default function HomePage() {
                 <div className="frow" key={r}>
                   {row.map((item, j) => {
                     const i = start + j;
+                    const accOpen = isMobile && openStep === i;
+                    // Mobile: the open step shows only its expanded card (the
+                    // compact node is replaced, not stacked above it).
+                    if (accOpen) {
+                      return (
+                        <div className="facc" key={i} data-card={i}>
+                          <div className="facc-clip" ref={accClipRef}>
+                            <div className="fexp-card">
+                              <span className="fexp-accent" aria-hidden="true" />
+                              {renderExpContent(i)}
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    }
                     return (
                       <button
                         key={i}
@@ -417,7 +604,7 @@ export default function HomePage() {
                         onClick={(e) => openCard(i, e)}
                         aria-expanded={openStep === i}
                         aria-controls="fexpanded"
-                        tabIndex={openStep !== null ? -1 : 0}
+                        tabIndex={openStep !== null && !isMobile ? -1 : 0}
                       >
                         <span className="fnum">{`0${i + 1}`}</span>
                         <span className="fcard-ico" aria-hidden="true">{WHAT_ICONS[i]}</span>
@@ -438,80 +625,36 @@ export default function HomePage() {
             })}
           </div>
 
-          {/* Full-section expanded step — the card itself, grown via FLIP */}
-          <div
-            className={`fexpanded${revealed ? ' revealed' : ''}`}
-            id="fexpanded"
-            role="region"
-            aria-hidden={openStep === null}
-            ref={expRef}
-          >
-            {openStep !== null && (
-              <div className="fexp-card">
-                {/* Persistent layer — visible during the grow (mirrors the card) */}
-                <span className="fexp-ghost" aria-hidden="true">{WHAT_ICONS[openStep]}</span>
-                {/* Thin paper accent bar across the top edge */}
-                <span className="fexp-accent" aria-hidden="true" />
-                {/* While closing, the box collapses showing a replica of the grid
-                    card so it lands seamlessly on the real card underneath (no
-                    icon -> card swap at the end) */}
-                {closing && (
-                  <div className="fexp-preview" aria-hidden="true">
-                    <span className="fnum">{`0${openStep + 1}`}</span>
-                    <span className="fcard-ico">{WHAT_ICONS[openStep]}</span>
-                    <span className="fcard-title">{t.what.items[openStep].k}</span>
-                    <span className="ftog">+</span>
-                  </div>
-                )}
-                <div className="fexp-body">
-                  {/* Media zone — icon now, images later */}
-                  <div className="fexp-media">
-                    <span className="fexp-ico" aria-hidden="true">{WHAT_ICONS[openStep]}</span>
-                  </div>
-                  {/* Text zone — controls, meta/title/body and disclaimer */}
-                  <div className="fexp-text">
-                    <div className="fexp-ctrl">
-                      <button
-                        className="fexp-btn"
-                        onClick={() => goToStep((openStep - 1 + stepCount) % stepCount)}
-                        aria-label={lang === 'PT' ? 'Etapa anterior' : 'Previous step'}
-                      >
-                        <svg viewBox="0 0 24 24" fill="none"><path d="M15 6l-6 6 6 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>
-                      </button>
-                      <button
-                        className="fexp-btn"
-                        onClick={() => goToStep((openStep + 1) % stepCount)}
-                        aria-label={lang === 'PT' ? 'Próxima etapa' : 'Next step'}
-                      >
-                        <svg viewBox="0 0 24 24" fill="none"><path d="M9 6l6 6-6 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>
-                      </button>
-                      <button
-                        className="fexp-btn fexp-close"
-                        onClick={closeCard}
-                        aria-label={lang === 'PT' ? 'Fechar' : 'Close'}
-                      >
-                        <svg viewBox="0 0 24 24" fill="none"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>
-                      </button>
+          {/* Full-section expanded step — desktop only, the card grown via FLIP.
+              (Mobile expands inline inside the grid above.) */}
+          {!isMobile && (
+            <div
+              className={`fexpanded${revealed ? ' revealed' : ''}`}
+              id="fexpanded"
+              role="region"
+              aria-hidden={openStep === null}
+              ref={expRef}
+            >
+              {openStep !== null && (
+                <div className="fexp-card">
+                  {/* Thin paper accent bar across the top edge */}
+                  <span className="fexp-accent" aria-hidden="true" />
+                  {/* While closing, a replica of the grid card covers the box as it
+                      collapses so it lands seamlessly on the real card underneath.
+                      On open the real content is already present as the box grows. */}
+                  {closing && (
+                    <div className="fexp-preview" aria-hidden="true">
+                      <span className="fnum">{`0${openStep + 1}`}</span>
+                      <span className="fcard-ico">{WHAT_ICONS[openStep]}</span>
+                      <span className="fcard-title">{t.what.items[openStep].k}</span>
+                      <span className="ftog">+</span>
                     </div>
-                    <div className="fexp-text-body">
-                      <div className="fexp-text-main">
-                        <span className="fexp-count">{`0${openStep + 1} / 0${stepCount}`}</span>
-                        <div className="fexp-heading">
-                          <h3 className="fexp-title">{t.what.items[openStep].k}</h3>
-                          <p className="fexp-desc">{t.what.items[openStep].v}</p>
-                        </div>
-                      </div>
-                      <p className="fexp-note">
-                        {lang === 'PT'
-                          ? 'Este material possui informações de negócio restritas. Entre em contato para ver outros exemplos.'
-                          : 'This material contains restricted business information. Get in touch to see other examples.'}
-                      </p>
-                    </div>
-                  </div>
+                  )}
+                  {renderExpContent(openStep)}
                 </div>
-              </div>
-            )}
-          </div>
+              )}
+            </div>
+          )}
         </div>
       </section>
 
@@ -593,10 +736,9 @@ export default function HomePage() {
       {/* Contact */}
       <section className="contact" id="contact">
         <h2 className="ctitle">
-          {lang === 'PT' ? <>VAMOS<br />CONVERSAR?</> : <>LET&rsquo;S<br />TALK?</>}
+          {lang === 'PT' ? <>Vamos<br />conversar?</> : <>Let&rsquo;s<br />talk?</>}
         </h2>
         <div className="ccontent">
-          <p className="csub">{t.contact.sub}</p>
           <div className="cinfo">
             <div className="crows">
               {/* Email — click to copy */}
@@ -662,7 +804,6 @@ export default function HomePage() {
 
       <footer className="foot">
         <span>{t.footer.sig}</span>
-        <span>v 2026.1 — FORTALEZA, CE</span>
       </footer>
     </div>
   );

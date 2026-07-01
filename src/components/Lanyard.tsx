@@ -1,7 +1,7 @@
 'use client';
 
 import * as THREE from 'three';
-import { Suspense, useEffect, useRef } from 'react';
+import { Suspense, useEffect, useRef, useState } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
 import { useTexture } from '@react-three/drei';
 
@@ -24,7 +24,7 @@ const ROPE_LEN = 3.98; // pivot -> card center at rest (card center ~ -0.48)
 // Strap runs from the pivot down to the card hole; +1px so it ends in the hole.
 const STRAP_LEN = ROPE_LEN - CARD_H / 2 + CLIP_DEPTH + 1 * PX;
 
-export default function Lanyard() {
+export default function Lanyard({ lang = 'PT' }: { lang?: 'PT' | 'EN' }) {
   return (
     <Canvas
       className="lanyard-canvas"
@@ -34,21 +34,40 @@ export default function Lanyard() {
     >
       <ambientLight intensity={1.2} />
       <Suspense fallback={null}>
-        <Band />
+        <Band lang={lang} />
       </Suspense>
     </Canvas>
   );
 }
 
-function Band() {
+function Band({ lang }: { lang: 'PT' | 'EN' }) {
   const card = useRef<THREE.Group>(null);
   const strap = useRef<THREE.Group>(null);
 
-  const texture = useTexture('/images/id_card.png');
+  // PT art always exists → safe to load via suspense. EN is optional: load it
+  // async and fall back to PT if the file is missing (no crash while absent).
+  const ptTexture = useTexture('/images/id_card.png');
+  const [texture, setTexture] = useState<THREE.Texture>(ptTexture);
+
+  useEffect(() => {
+    if (lang !== 'EN') {
+      setTexture(ptTexture);
+      return;
+    }
+    let active = true;
+    new THREE.TextureLoader().load(
+      '/images/id_card_en.png',
+      (t) => active && setTexture(t),
+      undefined,
+      () => active && setTexture(ptTexture), // missing EN art → keep PT
+    );
+    return () => { active = false; };
+  }, [lang, ptTexture]);
 
   useEffect(() => {
     texture.colorSpace = THREE.SRGBColorSpace;
     texture.anisotropy = 16;
+    texture.needsUpdate = true;
   }, [texture]);
 
   const start = useRef<number | null>(null);
