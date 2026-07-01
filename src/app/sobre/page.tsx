@@ -167,7 +167,6 @@ export default function SobrePage() {
           {lang === 'PT' ? <>VAMOS<br />CONVERSAR?</> : <>LET&rsquo;S<br />TALK?</>}
         </h2>
         <div className="ccontent">
-          <p className="csub">{t.contact.sub}</p>
           <div className="cinfo">
             <div className="crows">
               <button

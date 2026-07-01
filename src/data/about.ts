@@ -10,15 +10,15 @@ export interface LangItem { k: string; v: string; }
 export interface Translations {
   meta: { lang: string; other: string };
   nav: { home: string; projects: string; about: string; contact: string };
-  hero: { subtitle: string; nameShort: string; role: string; intro1: string; intro2pre: string; intro2em: string; intro3a: string; intro3b: string; intro3c: string; location: string; available: string; contactCta: string; contactSuffix: string };
+  hero: { subtitle: string; nameShort: string; role: string; intro: { lead: string; em: string }[]; location: string; available: string; contactCta: string; contactSuffix: string };
   bio: { title: string; p1: string; p2: string; p3: string };
   what: { title: string; items: WhatItem[] };
-  process: { title: string; subtitle: string; steps: ProcessStep[] };
+  process: { title: string; steps: ProcessStep[] };
   experience: { title: string; items: ExperienceItem[] };
   education: { title: string; items: EducationItem[] };
   skills: { title: string; groups: SkillGroup[] };
   langs: { title: string; items: LangItem[] };
-  contact: { title: string; cta: string; sub: string; cv: string; portfolio: string };
+  contact: { title: string; cta: string; cv: string; portfolio: string };
   footer: { sig: string };
 }
 
@@ -29,12 +29,11 @@ export const PT: Translations = {
     subtitle: 'Pode me chamar de',
     nameShort: 'Zé.',
     role: 'Product Designer',
-    intro1: 'Product Designer e Engenheiro de Produção.',
-    intro2pre: 'Focado na construção de sistemas complexos, ',
-    intro2em: 'do levantamento de requisitos ao handoff.',
-    intro3a: 'Atualmente, trabalho em projetos remodelando os sistemas financeiro e acadêmico da Universidade de Fortaleza, plataformas utilizadas por 20.000+ alunos e 1.000+ funcionários, traduzindo regras de negócio densas e requisitos técnicos estritos em jornadas de usuário eficientes e escaláveis.',
-    intro3b: 'Anteriormente, participei diretamente da criação da plataforma de gestão de licitações públicas da Procuradoria Geral do Estado do Ceará (PGE-CE), desde a definição de requisitos, prototipação, até o handoff para desenvolvedores e melhorias identificadas após implantações.',
-    intro3c: 'Ao focar 100% no processo de design de um produto, garanto o alinhamento de modelagem de processos, viabilidade técnica e interfaces claras e escaláveis.',
+    intro: [
+      { lead: 'Designer e Engenheiro de Produção focado na construção de sistemas complexos,', em: ' do levantamento de requisitos ao handoff.' },
+      { lead: 'Atualmente responsável pela transformação dos sistemas ', em: 'financeiro e acadêmico da Universidade de Fortaleza.' },
+      { lead: 'Participante direto na criação e no desenvolvimento da plataforma de gestão de licitações públicas da ', em: 'Procuradoria Geral do Estado do Ceará (PGE-CE).' },
+    ],
     location: 'Brasil — disponível para deslocamento e trabalhos remotos',
     available: 'Transformando a Universidade de Fortaleza',
     contactCta: 'Clique aqui',
@@ -53,13 +52,12 @@ export const PT: Translations = {
       { k: 'Fluxogramas', v: 'Ao conectar jornadas de usuário com blueprints de serviço, mapeio como as possíveis ações na tela refletem no sistema como um todo.' },
       { k: 'Wireframes', v: 'Ao criar estruturas de média fidelidade, valido principalmente a hierarquia de componentes e o escopo prático da solução diretamente com a equipe.' },
       { k: 'Alta fidelidade e Prototipação', v: 'Ao modelar interfaces responsivas e nativas, construo protótipos interativos que simulam com precisão o comportamento real do produto.' },
-      { k: 'Testes de usabilidade', v: 'Ao aplicar testes qualitativos e quantitativos com usuários reais, identifico gargalos na jornada e refino a usabilidade do fluxo com base em dados de comportamento.' },
+      { k: 'Testes de usabilidade', v: 'Ao aplicar testes qualitativos e quantitativos com usuários reais, busco identificar gargalos na jornada e refino a usabilidade do fluxo com base em dados de comportamento.' },
       { k: 'Validação com devs', v: 'Ao realizar o handoff para a equipe dev, reviso a lógica dos componentes e as regras de banco de dados para mitigar riscos e garantir a viabilidade do código.' },
     ],
   },
   process: {
     title: 'Como trabalho',
-    subtitle: 'Um produto, do início ao fim. Não entrego tela — entrego decisão validada.',
     steps: [
       { n: '01', k: 'Requisitos', v: 'Levanto requisitos com stakeholders e usuários. Mapeio o processo institucional antes de qualquer pixel.' },
       { n: '02', k: 'Fluxogramas', v: 'Desenho a jornada do usuário e os fluxos do sistema — onde decisão acontece, onde dados entram e saem.' },
@@ -133,11 +131,10 @@ export const PT: Translations = {
   contact: {
     title: 'Contato',
     cta: 'Vamos conversar?',
-    sub: 'Aberto a oportunidades de Product Design — full-time e freelance.',
     cv: 'Baixar CV (PDF)',
     portfolio: 'Ver trabalhos',
   },
-  footer: { sig: 'Desenhado e codado por José em Fortaleza · 2026' },
+  footer: { sig: 'Desenhado e implementado por Zé' },
 };
 
 export const EN: Translations = {
@@ -147,12 +144,11 @@ export const EN: Translations = {
     subtitle: 'You can call me',
     nameShort: 'Zé.',
     role: 'Product Designer',
-    intro1: 'Product Designer and Industrial Engineer.',
-    intro2pre: 'Focused on building complex systems, ',
-    intro2em: 'from requirements gathering to handoff.',
-    intro3a: 'Currently, I work on projects redesigning the financial and academic systems of University of Fortaleza — platforms used by 20,000+ students and 1,000+ staff — translating dense business rules and strict technical requirements into efficient, scalable user journeys.',
-    intro3b: 'Previously, I was directly involved in building the public procurement management platform for the Procuradoria Geral do Estado do Ceará (PGE-CE), from requirements definition and prototyping through developer handoff and post-deployment improvements.',
-    intro3c: "By focusing 100% on a product's design process, I ensure alignment between process modeling, technical feasibility, and clear, scalable interfaces.",
+    intro: [
+      { lead: 'Designer and Industrial Engineer focused on building complex systems,', em: ' from requirements gathering to handoff.' },
+      { lead: 'Currently responsible for transforming the ', em: 'financial and academic systems of University of Fortaleza.' },
+      { lead: 'Directly involved in the creation and development of the public procurement management platform of the ', em: 'Procuradoria Geral do Estado do Ceará (PGE-CE).' },
+    ],
     location: 'Brazil — available for remote work and travel',
     available: 'Transforming University of Fortaleza',
     contactCta: 'Click here',
@@ -177,7 +173,6 @@ export const EN: Translations = {
   },
   process: {
     title: 'How I work',
-    subtitle: "A product, beginning to end. I don't ship screens — I ship validated decisions.",
     steps: [
       { n: '01', k: 'Requirements', v: 'I gather requirements with stakeholders and users. I map the institutional process before drawing any pixel.' },
       { n: '02', k: 'Flowcharts', v: 'I map user journeys and system flows — where decisions happen, where data enters and leaves.' },
@@ -251,11 +246,10 @@ export const EN: Translations = {
   contact: {
     title: 'Contact',
     cta: "Let's talk?",
-    sub: 'Open to Product Design opportunities — full-time and freelance.',
     cv: 'Download CV (PDF)',
     portfolio: 'See work',
   },
-  footer: { sig: 'Designed and coded by José in Fortaleza · 2026' },
+  footer: { sig: 'Designed and implemented by Zé' },
 };
 
 export const CONTACT = {

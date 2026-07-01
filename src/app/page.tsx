@@ -1,10 +1,17 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useLayoutEffect, useRef } from 'react';
+import dynamic from 'next/dynamic';
 import Link from 'next/link';
 import './brutalist.css';
+
+// 3D physics badge — client-only (three/rapier WASM), no SSR.
+const Lanyard = dynamic(() => import('@/components/Lanyard'), { ssr: false });
 import { useI18n } from '@/hooks/useI18n';
 import { CONTACT } from '@/data/about';
+
+// useLayoutEffect on the client, useEffect on the server (avoids SSR warning).
+const useIsoLayoutEffect = typeof window !== 'undefined' ? useLayoutEffect : useEffect;
 
 // Ícones da seção "O que faço" — 72×72, recoloríveis via currentColor.
 // Recortes (#0A0A0A) ficam fixos para vazar contra o fundo do card.
@@ -60,10 +67,303 @@ const WHAT_ICONS = [
   </svg>,
 ];
 
+// Imagem da zona de mídia do card expandido, por etapa. Etapa sem imagem
+// cai no ícone (WHAT_ICONS). bg = fundo do painel (varia por imagem no Figma).
+// cover: imagem preenche a largura encostando nas bordas laterais (só padding
+// vertical), com object-fit cover — como no Figma. Padrão: contain, com padding.
+// w/h are the images' natural pixel sizes — passed to <img> so the browser
+// reserves the aspect-ratio box before the pixels load, keeping the mobile
+// accordion's measured height correct (no snap when the image finishes loading).
+const WHAT_MEDIA: ({ src: string; bg: string; w: number; h: number; cover?: boolean; fillBottom?: boolean } | undefined)[] = [
+  { src: '/images/Como_trabalho_Requisitos.png', bg: '#ececec', w: 3700, h: 2112 },
+  { src: '/images/Como_trabalho_Fluxogramas.png', bg: '#ffffff', w: 1556, h: 1399 },
+  { src: '/images/Como_trabalho_Wireframes.png', bg: '#e6e6e6', w: 1050, h: 944 },
+  { src: '/images/Como_trabalho_Prototipos.png', bg: '#2b2b2b', w: 1607, h: 1473, fillBottom: true },
+  { src: '/images/Como_trabalho_Testes.png', bg: '#ffffff', w: 1932, h: 1776, fillBottom: true },
+  { src: '/images/Como_trabalho_Validacao.png', bg: '#28292a', w: 1470, h: 833, cover: true },
+];
+
 export default function HomePage() {
   const { lang, t, toggle } = useI18n('PT');
   const [copied, setCopied] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [openStep, setOpenStep] = useState<number | null>(null);
+  const [closing, setClosing] = useState(false);
+  const [revealed, setRevealed] = useState(false);
+  const [cols, setCols] = useState(3);
+  const [bandIn, setBandIn] = useState(false);
+  const stepCount = t.what.items.length;
+
+  const topRef = useRef<HTMLElement>(null);
+  const roleMarkRef = useRef<HTMLSpanElement>(null);
+  const bandRef = useRef<HTMLElement>(null);
+  const boardRef = useRef<HTMLDivElement>(null);
+  const expRef = useRef<HTMLDivElement>(null);
+  const originRef = useRef<{ top: number; left: number; width: number; height: number } | null>(null);
+  const openingRef = useRef(false);
+  // Mobile accordion height-morph: the open card's clip element, the last height
+  // it settled at (so a step-change morphs from it, not from zero), and a flag so
+  // the collapse-on-close transition isn't undone by the open effect's listener.
+  const accClipRef = useRef<HTMLDivElement | null>(null);
+  const prevAccH = useRef(0);
+  // Compact card height captured at open — the morph grows from / collapses to it
+  // so swapping compact↔expanded never jumps the layout by the compact's height.
+  const accBaseH = useRef(0);
+  const accClosing = useRef(false);
+  const ACC_EASE = 'height 0.6s cubic-bezier(0.4, 0, 0.2, 1)';
+
+  // Card geometry relative to the board (so the expanded element can morph
+  // from the card's exact position/size to filling the whole board).
+  const getRect = (card: Element) => {
+    const b = boardRef.current!.getBoundingClientRect();
+    const c = card.getBoundingClientRect();
+    return { top: c.top - b.top, left: c.left - b.left, width: c.width, height: c.height };
+  };
+
+  // Desktop uses a FLIP overlay that grows to fill the board; mobile expands the
+  // tapped card inline (accordion) so the other cards stay visible.
+  const isMobile = cols === 1;
+
+  const openCard = (i: number, e: React.MouseEvent) => {
+    if (isMobile) {
+      // Grow from the tapped compact card's height so the slot doesn't jump.
+      const h = (e.currentTarget as HTMLElement).getBoundingClientRect().height;
+      accBaseH.current = h;
+      if (openStep === null) prevAccH.current = h;
+      setOpenStep((prev) => (prev === i ? null : i));
+      return; // morph is driven by the mobile effect below
+    }
+    if (openStep !== null) return;
+    originRef.current = getRect(e.currentTarget as Element);
+    openingRef.current = true;
+    setRevealed(false);
+    setOpenStep(i);
+  };
+
+  // Step through while expanded — keep it filled, just re-anchor the origin
+  // to the new card so a later close morphs back to the right place.
+  const goToStep = (i: number) => {
+    const card = boardRef.current?.querySelector(`[data-card="${i}"]`);
+    if (card) originRef.current = getRect(card);
+    setOpenStep(i);
+  };
+
+  const closeCard = () => {
+    if (isMobile) {
+      // Collapse the open card's clip height → 0, then unmount once done.
+      const clip = accClipRef.current;
+      const base = accBaseH.current;
+      if (clip) {
+        accClosing.current = true;
+        const from = clip.getBoundingClientRect().height;
+        clip.style.transition = 'none';
+        clip.style.height = `${from}px`;
+        void clip.offsetHeight;
+        clip.style.transition = ACC_EASE;
+        // Collapse only down to the compact card's height; unmounting then swaps
+        // in the real compact card at the same size, so nothing jumps.
+        clip.style.height = `${base}px`;
+      }
+      prevAccH.current = 0;
+      window.setTimeout(() => { accClosing.current = false; setOpenStep(null); }, 620);
+      return;
+    }
+    const el = expRef.current;
+    const o = originRef.current;
+    if (!el || !o) { setOpenStep(null); return; }
+    setRevealed(false);
+    setClosing(true);
+    el.style.transition = ''; // restore the shared 0.5s CSS transition (open sets 1s)
+    requestAnimationFrame(() => {
+      el.style.top = `${o.top}px`;
+      el.style.left = `${o.left}px`;
+      el.style.width = `${o.width}px`;
+      el.style.height = `${o.height}px`;
+    });
+    let fin = false;
+    const finish = () => {
+      if (fin) return;
+      fin = true;
+      el.removeEventListener('transitionend', done);
+      clearTimeout(timer);
+      setOpenStep(null);
+      setClosing(false);
+      originRef.current = null;
+      // NB: keep the inline geometry (origin-card size) here. data-open flips
+      // false on the next React commit and hides the element; wiping styles now
+      // would snap it to its CSS default (top-left, 100% wide) for one frame
+      // while still display:block -> visible flicker. The open effect re-seeds
+      // geometry before painting, so stale inline styles are harmless.
+    };
+    const done = (ev: TransitionEvent) => { if (ev.propertyName === 'width') finish(); };
+    el.addEventListener('transitionend', done);
+    const timer = setTimeout(finish, 600); // fallback when transitions are off
+  };
+
+  // Mobile accordion: morph the clip height from where it last settled (0 on a
+  // fresh open, the previous card's height when stepping) to the new content's
+  // height. Runs in a layout effect so the pinned start height paints before the
+  // browser shows the freshly-mounted card at its natural size (no flash). After
+  // the morph, release to height:auto so late-loading images / resize can grow it.
+  useIsoLayoutEffect(() => {
+    if (!isMobile || openStep === null) return;
+    const clip = accClipRef.current;
+    if (!clip) return;
+    accClosing.current = false;
+    const target = clip.scrollHeight; // natural height of the new content
+    const from = prevAccH.current;
+    prevAccH.current = target;
+    clip.style.transition = 'none';
+    clip.style.height = `${from}px`;
+    void clip.offsetHeight; // reflow so the start height sticks
+    clip.style.transition = ACC_EASE;
+    clip.style.height = `${target}px`;
+    const done = (ev: TransitionEvent) => {
+      if (ev.propertyName !== 'height' || accClosing.current) return;
+      clip.style.transition = 'none';
+      clip.style.height = 'auto';
+      prevAccH.current = clip.getBoundingClientRect().height;
+    };
+    clip.addEventListener('transitionend', done);
+    return () => clip.removeEventListener('transitionend', done);
+  }, [openStep, isMobile, lang]);
+
+  // FLIP expand: place the element on the card, then animate it to fill the board.
+  useIsoLayoutEffect(() => {
+    if (!openingRef.current || openStep === null) return;
+    openingRef.current = false;
+    const el = expRef.current;
+    const board = boardRef.current;
+    const o = originRef.current;
+    if (!el || !board || !o) return;
+    el.style.transition = 'none';
+    el.style.top = `${o.top}px`;
+    el.style.left = `${o.left}px`;
+    el.style.width = `${o.width}px`;
+    el.style.height = `${o.height}px`;
+    void el.offsetWidth; // force reflow so the start frame sticks
+    // Open grows at 1s — twice the shared 0.5s CSS transition (close resets it).
+    el.style.transition =
+      'top 1s cubic-bezier(0.22, 1, 0.36, 1), left 1s cubic-bezier(0.22, 1, 0.36, 1), width 1s cubic-bezier(0.22, 1, 0.36, 1), height 1s cubic-bezier(0.22, 1, 0.36, 1)';
+    el.style.top = '0px';
+    el.style.left = '0px';
+    el.style.width = '100%';
+    el.style.height = `${board.offsetHeight}px`;
+    let done = false;
+    const finish = () => {
+      if (done) return;
+      done = true;
+      el.removeEventListener('transitionend', reveal);
+      clearTimeout(timer);
+      setRevealed(true);
+    };
+    const reveal = (ev: TransitionEvent) => { if (ev.propertyName === 'width') finish(); };
+    el.addEventListener('transitionend', reveal);
+    const timer = setTimeout(finish, 1120); // fallback when transitions are off
+    return () => { el.removeEventListener('transitionend', reveal); clearTimeout(timer); };
+  }, [openStep]);
+
+  // Keep the expanded height in sync if the viewport resizes while open.
+  useEffect(() => {
+    if (openStep === null || closing) return;
+    const onResize = () => {
+      const el = expRef.current;
+      const board = boardRef.current;
+      if (el && board) el.style.height = `${board.offsetHeight}px`;
+    };
+    window.addEventListener('resize', onResize);
+    return () => window.removeEventListener('resize', onResize);
+  }, [openStep, closing]);
+
+  // Grid columns drive how steps chunk into rows. 3 cols ≥768px, 1 col on mobile.
+  useEffect(() => {
+    const mq = window.matchMedia('(max-width: 767px)');
+    const apply = () => setCols(mq.matches ? 1 : 3);
+    apply();
+    mq.addEventListener('change', apply);
+    return () => mq.removeEventListener('change', apply);
+  }, []);
+
+  // Publish the sticky topbar's height as --top-h so the hero can fill exactly
+  // the viewport below it (calc(100dvh - --top-h)). Height shifts per breakpoint,
+  // on resize and after fonts load, so track it live.
+  useIsoLayoutEffect(() => {
+    const el = topRef.current;
+    if (!el) return;
+    const apply = () =>
+      document.documentElement.style.setProperty('--top-h', `${el.offsetHeight}px`);
+    apply();
+    const ro = new ResizeObserver(apply);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
+
+  // Publish the "product designer" mark's left offset (viewport px) as
+  // --mark-left. On mobile the yellow rectangle grows only rightward to 66vw,
+  // so its width = 66vw minus whatever space sits to its left.
+  useIsoLayoutEffect(() => {
+    const el = roleMarkRef.current;
+    if (!el) return;
+    const apply = () =>
+      el.style.setProperty('--mark-left', `${el.getBoundingClientRect().left}px`);
+    apply();
+    window.addEventListener('resize', apply);
+    return () => window.removeEventListener('resize', apply);
+  }, [lang]);
+
+  // Reveal the manifesto marks when the band scrolls into view (one-shot).
+  useEffect(() => {
+    const el = bandRef.current;
+    if (!el) return;
+    const io = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setBandIn(true);
+          io.disconnect();
+        }
+      },
+      { threshold: 0.35 }
+    );
+    io.observe(el);
+    return () => io.disconnect();
+  }, []);
+
+  // Keyboard control while a step is expanded: Esc closes, ← → navigate.
+  useEffect(() => {
+    if (openStep === null) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') closeCard();
+      else if (e.key === 'ArrowRight') goToStep((openStep + 1) % stepCount);
+      else if (e.key === 'ArrowLeft') goToStep((openStep - 1 + stepCount) % stepCount);
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [openStep, stepCount]);
+
+  // On open (and when stepping between cards), scroll the expanded content into
+  // view: on mobile the opened card's top aligns just below the sticky topbar;
+  // on tablet/desktop the board is centered in the viewport.
+  useEffect(() => {
+    if (openStep === null || closing) return;
+    const id = requestAnimationFrame(() => {
+      if (isMobile) {
+        const card = boardRef.current?.querySelector(`[data-card="${openStep}"]`) as HTMLElement | null;
+        if (!card) return;
+        const topH = topRef.current?.offsetHeight ?? 0;
+        // 24px breathing room between the sticky topbar and the card's top edge.
+        const y = window.scrollY + card.getBoundingClientRect().top - topH - 24;
+        window.scrollTo({ top: y, behavior: 'smooth' });
+      } else {
+        const board = boardRef.current;
+        if (!board) return;
+        const r = board.getBoundingClientRect();
+        const y = window.scrollY + r.top + r.height / 2 - window.innerHeight / 2;
+        window.scrollTo({ top: y, behavior: 'smooth' });
+      }
+    });
+    return () => cancelAnimationFrame(id);
+  }, [openStep, closing, isMobile]);
 
   const handleCopyEmail = async () => {
     await navigator.clipboard.writeText(CONTACT.email);
@@ -71,31 +371,73 @@ export default function HomePage() {
     setTimeout(() => setCopied(false), 3000);
   };
 
-  const scrollToContact = (e: React.MouseEvent<HTMLAnchorElement>) => {
-    e.preventDefault();
-    const el = document.getElementById('contact');
-    if (!el) return;
-    const offset = 56;
-    const start = window.scrollY;
-    const target = el.getBoundingClientRect().top + start - offset;
-    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    if (reduce) { window.scrollTo(0, target); return; }
-    const dist = target - start;
-    const dur = 1400;
-    const ease = (t: number) => t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
-    const t0 = performance.now();
-    const step = (now: number) => {
-      const p = Math.min((now - t0) / dur, 1);
-      window.scrollTo(0, start + dist * ease(p));
-      if (p < 1) requestAnimationFrame(step);
-    };
-    requestAnimationFrame(step);
+  // Inner content of an expanded step (media + controls + text). Shared by the
+  // desktop FLIP overlay and the mobile inline accordion.
+  const renderExpContent = (step: number) => {
+    const media = WHAT_MEDIA[step];
+    return (
+      <div className="fexp-body">
+        {/* Media zone — image when the step has one, else the icon */}
+        <div
+          className={`fexp-media${media?.cover ? ' fexp-media-cover' : ''}${media?.fillBottom ? ' fexp-media-fillbottom' : ''}`}
+          style={media ? { background: media.bg } : undefined}
+        >
+          {media ? (
+            <img className="fexp-img" src={media.src} width={media.w} height={media.h} alt="" draggable={false} />
+          ) : (
+            <span className="fexp-ico" aria-hidden="true">{WHAT_ICONS[step]}</span>
+          )}
+        </div>
+        {/* Text zone — controls, meta/title/body and disclaimer */}
+        <div className="fexp-text">
+          <div className="fexp-ctrl">
+            <button
+              className="fexp-btn"
+              onClick={() => goToStep((step - 1 + stepCount) % stepCount)}
+              aria-label={lang === 'PT' ? 'Etapa anterior' : 'Previous step'}
+            >
+              <svg viewBox="0 0 24 24" fill="none"><path d="M15 6l-6 6 6 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>
+            </button>
+            <button
+              className="fexp-btn"
+              onClick={() => goToStep((step + 1) % stepCount)}
+              aria-label={lang === 'PT' ? 'Próxima etapa' : 'Next step'}
+            >
+              <svg viewBox="0 0 24 24" fill="none"><path d="M9 6l6 6-6 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>
+            </button>
+            <button
+              className="fexp-btn fexp-close"
+              onClick={closeCard}
+              aria-label={lang === 'PT' ? 'Fechar' : 'Close'}
+            >
+              <svg viewBox="0 0 24 24" fill="none"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>
+            </button>
+          </div>
+          <div className="fexp-text-body">
+            <div className="fexp-text-main">
+              <span className="fexp-count">{`0${step + 1} / 0${stepCount}`}</span>
+              <div className="fexp-heading">
+                <h3 className="fexp-title">{t.what.items[step].k}</h3>
+                <p className="fexp-desc">{t.what.items[step].v}</p>
+              </div>
+            </div>
+            {step === 1 && (
+              <p className="fexp-note">
+                {lang === 'PT'
+                  ? 'Este fluxo de jornada de usuário possui informações de negócio restritas. Entre em contato para ver outros exemplos.'
+                  : 'This user journey flow contains restricted business information. Get in touch to see other examples.'}
+              </p>
+            )}
+          </div>
+        </div>
+      </div>
+    );
   };
 
   return (
     <div className="br">
       {/* Topbar */}
-      <header className="top">
+      <header className="top" ref={topRef}>
         <button
           className="burger"
           onClick={() => setMenuOpen(true)}
@@ -107,7 +449,7 @@ export default function HomePage() {
           </svg>
         </button>
         <div className="lhs">
-          <div className="mark">ZE — PRODUCT DESIGNER</div>
+          <div className="mark">Zé - Product Designer</div>
           <nav className="nav">
             <Link href="/" className="on">{t.nav.home}</Link>
             <Link href="/sobre">{t.nav.about}</Link>
@@ -177,61 +519,33 @@ export default function HomePage() {
       <section className="hero">
         <div className="top-row">
           <div className="left">
-            <div>
+            <div className="headline">
               <p className="subtitle">{t.hero.subtitle}</p>
               <h1 className="name">{t.hero.nameShort}</h1>
             </div>
             <div className="desc">
-              <p className="role">↳ {t.hero.role}</p>
-              <div className="intro-group">
-                <div className="intro">
-                  <p>{t.hero.intro1}</p>
-                  <p>{t.hero.intro2pre}<span className="em">{t.hero.intro2em}</span></p>
-                </div>
-                <div className="intro-body">
-                  {lang === 'PT' ? (
-                    <>
-                      <p>Especialista na evolução e transformação digital dos sistemas financeiro e acadêmico da <strong>Universidade de Fortaleza</strong>, plataformas utilizadas por <strong>20.000+ alunos e 1.000+ funcionários</strong> diariamente, traduzindo regras de negócio densas e requisitos técnicos estritos em <strong>jornadas de usuário eficientes e escaláveis</strong>.</p>
-                      <p>Anteriormente, participei diretamente da criação da plataforma de gestão de licitações públicas da <strong>Procuradoria Geral do Estado do Ceará (PGE-CE)</strong>, desde a definição de requisitos, prototipação, até o handoff para desenvolvedores e melhorias identificadas após implantações.</p>
-                      <p>Ao focar 100% no processo de design de um produto, garanto o alinhamento de <strong>modelagem de processos, viabilidade técnica e interfaces claras e escaláveis</strong>.</p>
-                    </>
-                  ) : (
-                    <>
-                      <p>Specialist in the digital evolution and transformation of the financial and academic systems of <strong>University of Fortaleza</strong>, platforms used by <strong>20,000+ students and 1,000+ staff</strong> daily, translating dense business rules and strict technical requirements into <strong>efficient, scalable user journeys</strong>.</p>
-                      <p>Previously, I was directly involved in building the public procurement management platform for the <strong>Procuradoria Geral do Estado do Ceará (PGE-CE)</strong>, from requirements definition and prototyping through developer handoff and post-deployment improvements.</p>
-                      <p>By focusing 100% on a product&apos;s design process, I ensure alignment between <strong>process modeling, technical feasibility, and clear, scalable interfaces</strong>.</p>
-                    </>
-                  )}
-                </div>
+              <p className="role">
+                <span className="role-arrow" aria-hidden="true">↳</span>
+                <span className="role-mark" ref={roleMarkRef}>{t.hero.role}</span>
+              </p>
+              <div className="intro">
+                {t.hero.intro.map((p, i) => (
+                  <p key={i} className={`intro-p intro-p${i + 1}`}>
+                    <span className="lead">{p.lead}</span>
+                    <span className="em">{p.em}</span>
+                  </p>
+                ))}
               </div>
             </div>
           </div>
-          <div className="photo-col">
-            <div className="photo">
-              <img src="/images/foto_ze2.png" alt="Zé" />
-            </div>
-            <div className="info-panel">
-              <div className="icell">
-                <span className="k">{lang === 'PT' ? 'Localização' : 'Location'}</span>
-                <p className="v">{t.hero.location}</p>
-              </div>
-              <div className="icell">
-                <span className="k">{lang === 'PT' ? 'Status atual' : 'Current status'}</span>
-                <span className="pill"><span className="dot">●</span> {t.hero.available}</span>
-              </div>
-              <div className="icell">
-                <span className="k">{lang === 'PT' ? 'Contato' : 'Contact'}</span>
-                <p className="v">
-                  <a href="#contact" onClick={scrollToContact}>{t.hero.contactCta}</a>{t.hero.contactSuffix}
-                </p>
-              </div>
-            </div>
+          <div className="badge-col" aria-hidden="true">
+            <Lanyard lang={lang} />
           </div>
         </div>
       </section>
 
       {/* Manifesto band */}
-      <section className="portband">
+      <section className={`portband${bandIn ? ' in' : ''}`} ref={bandRef}>
         <h2>
           {lang === 'PT' ? (
             <>
@@ -251,19 +565,96 @@ export default function HomePage() {
         </h2>
       </section>
 
-      {/* What I do */}
-      <section className="sec what">
+      {/* How I work — interactive flowchart */}
+      <section className="sec flow">
         <div className="head">
           <h2>{t.what.title}</h2>
         </div>
-        <div className="grid">
-          {t.what.items.map((item, i) => (
-            <div className="cell" key={i}>
-              <p className="k">{item.k}</p>
-              <span className="ico">{WHAT_ICONS[i]}</span>
-              <p className="v">{item.v}</p>
+        <div className="fboard" data-open={openStep !== null} data-closing={closing} ref={boardRef}>
+          {/* Grid of step nodes — faded behind the FLIP overlay on desktop; on
+              mobile it stays visible and the open step expands inline (accordion) */}
+          <div className="fgrid" aria-hidden={openStep !== null && !isMobile}>
+            {Array.from({ length: Math.ceil(stepCount / cols) }, (_, r) => {
+              const start = r * cols;
+              const row = t.what.items.slice(start, start + cols);
+              return (
+                <div className="frow" key={r}>
+                  {row.map((item, j) => {
+                    const i = start + j;
+                    const accOpen = isMobile && openStep === i;
+                    // Mobile: the open step shows only its expanded card (the
+                    // compact node is replaced, not stacked above it).
+                    if (accOpen) {
+                      return (
+                        <div className="facc" key={i} data-card={i}>
+                          <div className="facc-clip" ref={accClipRef}>
+                            <div className="fexp-card">
+                              <span className="fexp-accent" aria-hidden="true" />
+                              {renderExpContent(i)}
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    }
+                    return (
+                      <button
+                        key={i}
+                        className="fcard"
+                        data-card={i}
+                        onClick={(e) => openCard(i, e)}
+                        aria-expanded={openStep === i}
+                        aria-controls="fexpanded"
+                        tabIndex={openStep !== null && !isMobile ? -1 : 0}
+                      >
+                        <span className="fnum">{`0${i + 1}`}</span>
+                        <span className="fcard-ico" aria-hidden="true">{WHAT_ICONS[i]}</span>
+                        <span className="fcard-title">{item.k}</span>
+                        <span className="ftog" aria-hidden="true">+</span>
+                        {j < row.length - 1 && (
+                          <span className="farrow" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" fill="none">
+                              <path d="M5 12h13M13 6l6 6-6 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                            </svg>
+                          </span>
+                        )}
+                      </button>
+                    );
+                  })}
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Full-section expanded step — desktop only, the card grown via FLIP.
+              (Mobile expands inline inside the grid above.) */}
+          {!isMobile && (
+            <div
+              className={`fexpanded${revealed ? ' revealed' : ''}`}
+              id="fexpanded"
+              role="region"
+              aria-hidden={openStep === null}
+              ref={expRef}
+            >
+              {openStep !== null && (
+                <div className="fexp-card">
+                  {/* Thin paper accent bar across the top edge */}
+                  <span className="fexp-accent" aria-hidden="true" />
+                  {/* While closing, a replica of the grid card covers the box as it
+                      collapses so it lands seamlessly on the real card underneath.
+                      On open the real content is already present as the box grows. */}
+                  {closing && (
+                    <div className="fexp-preview" aria-hidden="true">
+                      <span className="fnum">{`0${openStep + 1}`}</span>
+                      <span className="fcard-ico">{WHAT_ICONS[openStep]}</span>
+                      <span className="fcard-title">{t.what.items[openStep].k}</span>
+                      <span className="ftog">+</span>
+                    </div>
+                  )}
+                  {renderExpContent(openStep)}
+                </div>
+              )}
             </div>
-          ))}
+          )}
         </div>
       </section>
 
@@ -345,10 +736,9 @@ export default function HomePage() {
       {/* Contact */}
       <section className="contact" id="contact">
         <h2 className="ctitle">
-          {lang === 'PT' ? <>VAMOS<br />CONVERSAR?</> : <>LET&rsquo;S<br />TALK?</>}
+          {lang === 'PT' ? <>Vamos<br />conversar?</> : <>Let&rsquo;s<br />talk?</>}
         </h2>
         <div className="ccontent">
-          <p className="csub">{t.contact.sub}</p>
           <div className="cinfo">
             <div className="crows">
               {/* Email — click to copy */}
@@ -414,7 +804,6 @@ export default function HomePage() {
 
       <footer className="foot">
         <span>{t.footer.sig}</span>
-        <span>v 2026.1 — FORTALEZA, CE</span>
       </footer>
     </div>
   );

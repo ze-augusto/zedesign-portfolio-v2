@@ -12,7 +12,7 @@
   --br-fg:     var(--color-ink);      /* #0A0A0A */
   --br-mute:   var(--color-muted);    /* #5B5B5B */
   --br-yellow: var(--color-brand);    /* #F5E22A */
-  font-family: var(--font-archivo), 'Helvetica Neue', Helvetica, sans-serif;
+  font-family: var(--font-inter), 'Helvetica Neue', Helvetica, sans-serif;
   background: var(--br-bg);
   color: var(--br-fg);
   width: 100%;
@@ -30,25 +30,27 @@
   align-items: stretch;
   background: var(--br-fg);
   color: var(--br-bg);
+  padding: 0 32px;
   position: sticky;
   top: 0;
   z-index: 100;
 }
 .br .top .lhs { display: flex; }
 .br .top .mark {
-  padding: 16px 28px;
-  font-weight: 800;
+  padding: 16px;
+  font-weight: 700;
   font-size: 14px;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
+  line-height: 20px;
+  letter-spacing: 0;
   border-right: 2px solid rgba(235,234,233,0.2);
 }
 .br .top .nav { display: flex; }
 .br .top .nav a {
-  padding: 16px 24px;
+  padding: 16px 40px;
   font-size: 14px;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
+  font-weight: 700;
+  line-height: 20px;
+  letter-spacing: 0;
   border-right: 0.5px solid rgba(235,234,233,0.15);
   color: var(--br-bg);
   text-decoration: none;
@@ -62,12 +64,13 @@
   color: var(--br-bg);
   border: none;
   border-left: 0.5px solid rgba(235,234,233,0.15);
-  padding: 16px 22px;
+  padding: 16px;
   font: inherit;
   font-size: 14px;
   font-weight: 700;
+  line-height: 20px;
   cursor: pointer;
-  letter-spacing: 0.06em;
+  letter-spacing: 0;
   display: inline-flex;
   align-items: center;
   gap: 8px;
@@ -141,7 +144,7 @@
 .br .drawer nav a:hover { color: var(--br-yellow); }
 
 /* ─── Hero ─── */
-.br .hero { border-bottom: 3px solid var(--br-fg); background: var(--br-bg); }
+.br .hero { background: var(--br-bg); display: flex; flex-direction: column; }
 .br .hero .top-row {
   display: flex;
   gap: 32px;
@@ -152,41 +155,81 @@
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 0; /* headline encosta direto na desc (Figma: 0) */
   padding-top: 32px;
 }
+.br .hero .headline { display: flex; flex-direction: column; }
 .br .hero .subtitle {
   font-size: 40px;
   font-weight: 700;
-  letter-spacing: 0.18em;
   color: var(--br-mute);
-  text-transform: uppercase;
-  line-height: 1.6;
+  line-height: 60px;
 }
 .br .hero .name {
-  font-size: 80px;
+  font-size: 72px;
   font-weight: 900;
-  line-height: 1.25;
+  line-height: 80px;
   margin: 0;
 }
 .br .hero .desc {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 64px;
   padding: 16px 0;
 }
 .br .hero .role {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px; /* ↳ -> texto, conforme Figma (Frame 27) */
   font-size: 32px;
-  font-weight: 700;
-  letter-spacing: 0.18em;
-  color: var(--br-mute);
-  text-transform: uppercase;
+  position: relative;
+  z-index: 0;
 }
-.br .hero .intro p { font-size: 18px; font-weight: 500; line-height: 28px; margin: 0; }
-.br .hero .intro-group { display: flex; flex-direction: column; gap: 24px; }
-.br .hero .intro-body { max-width: 540px; display: flex; flex-direction: column; gap: 28px; }
-.br .hero .intro-body p { font-size: 18px; font-weight: 500; line-height: 28px; }
-.br .hero .intro .em { font-weight: 600; text-decoration: underline; text-underline-offset: 4px; }
+.br .hero .role-arrow {
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: 5.76px;
+  color: var(--br-mute);
+}
+.br .hero .role-mark {
+  position: relative;
+  font-weight: 700;
+  line-height: 48px;
+  color: var(--br-fg);
+}
+.br .hero .role-mark::before {
+  content: '';
+  position: absolute;
+  inset: 0 -8px;
+  background: var(--br-yellow);
+  z-index: -1;
+}
+.br .hero .intro { display: flex; flex-direction: column; gap: 16px; }
+.br .hero .intro-p { font-size: 18px; margin: 0; }
+.br .hero .intro-p .lead { font-weight: 400; color: var(--br-mute); }
+.br .hero .intro-p .em { font-weight: 500; color: var(--br-fg); }
+.br .hero .intro-p1 { max-width: 704px; line-height: 24px; }
+.br .hero .intro-p2 { max-width: 540px; line-height: 28px; }
+.br .hero .intro-p3 { max-width: 460px; line-height: 28px; }
+.br .hero .badge-col {
+  flex-shrink: 0;
+  width: 420px;
+  height: 640px;
+  position: relative;
+  overflow: visible;
+}
+.br .hero .badge-col { --cord-top: 104px; }
+.br .hero .lanyard-canvas {
+  position: absolute;
+  top: calc(-1 * var(--cord-top));
+  left: -30%;
+  width: 160% !important;
+  height: calc(100% + var(--cord-top)) !important;
+  display: block;
+  pointer-events: none;
+  touch-action: none;
+  z-index: 0; /* stays under the sticky topbar (z 100) -> cord vem dela */
+}
 .br .hero .photo-col {
   display: flex;
   flex-direction: column;
@@ -256,7 +299,6 @@
 .br .portband {
   background: var(--br-yellow);
   padding: 64px 48px;
-  border-bottom: 3px solid var(--br-fg);
 }
 .br .portband h2 {
   font-size: 48px;
@@ -271,10 +313,20 @@
   padding: 0 8px;
   -webkit-box-decoration-break: clone;
   box-decoration-break: clone;
+  display: inline-block;
+  clip-path: inset(0 100% 0 0);
+  transition: clip-path 2.8s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.br .portband.in h2 mark { clip-path: inset(0 0 0 0); }
+.br .portband.in h2 mark:nth-of-type(1) { transition-delay: 0.2s; }
+.br .portband.in h2 mark:nth-of-type(2) { transition-delay: 0.8s; }
+.br .portband.in h2 mark:nth-of-type(3) { transition-delay: 1.4s; }
+@media (prefers-reduced-motion: reduce) {
+  .br .portband h2 mark { clip-path: none; transition: none; }
 }
 
 /* ─── Section base ─── */
-.br .sec { padding: 64px 56px; border-bottom: 3px solid var(--br-fg); }
+.br .sec { padding: 64px 56px; }
 .br .sec .head { display: flex; align-items: baseline; gap: 16px; margin-bottom: 36px; }
 .br .sec .head .n {
   font-family: var(--font-jetbrains-mono), ui-monospace, monospace;
@@ -291,23 +343,274 @@
   text-transform: uppercase;
 }
 
-/* ─── What I do ─── */
-.br .what { background: var(--br-fg); color: var(--br-bg); }
-.br .what .head { margin-bottom: 56px; }
-.br .what .head h2 { color: var(--br-bg); }
-.br .what .grid { display: grid; grid-template-columns: repeat(3, 312px); justify-content: space-between; row-gap: 56px; }
-.br .what .cell {
+/* ─── How I work — interactive flowchart ─── */
+.br .flow { background: var(--br-fg); color: var(--br-bg); }
+.br .flow .head { margin-bottom: 44px; }
+.br .flow .head h2 { color: var(--br-bg); }
+
+/* board — grid and expanded view share the same box */
+.br .flow .fboard { position: relative; }
+.br .flow .fgrid {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+.br .flow .frow {
+  display: grid;
+  /* minmax(0,1fr) so every card is exactly 1/3 of the row — long unbreakable
+     titles can't inflate a column and desync widths between rows. */
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 24px;
+}
+/* while a step is expanded the grid fades out but stays in flow so the
+   board keeps its height (the FLIP target) and the expanded element overlays it */
+.br .flow .fboard[data-open='true'] .fgrid {
+  opacity: 0;
+  transform: scale(0.97);
+  pointer-events: none;
+}
+/* while shrinking back, bring the grid in immediately so the cards are
+   already there as the expanded card collapses (not after it finishes) */
+.br .flow .fboard[data-closing='true'] .fgrid {
+  opacity: 1;
+  transform: none;
+}
+
+/* card (node) */
+.br .flow .fcard {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  aspect-ratio: 16 / 11;
+  padding: 22px 24px;
+  background: transparent;
+  color: var(--br-bg);
+  border: 3px solid var(--br-bg);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  overflow: hidden;
+  transition: transform 0.2s ease, border-color 0.2s ease, background 0.2s ease, color 0.2s ease;
+}
+.br .flow .fcard:hover { border-color: var(--br-yellow); transform: translateY(-3px); }
+.br .flow .fcard:focus-visible { outline: 3px solid var(--br-yellow); outline-offset: 3px; }
+.br .flow .fnum {
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: var(--br-yellow);
+  transition: color 0.2s ease;
+  position: relative;
+  z-index: 2;
+}
+.br .flow .fcard-title {
+  font-size: 24px;
+  font-weight: 800;
+  line-height: 1.1;
+  letter-spacing: -0.01em;
+  max-width: 80%;
+  position: relative;
+  z-index: 2;
+}
+.br .flow .fcard-ico {
+  position: absolute;
+  right: -10px;
+  bottom: -10px;
+  width: 96px;
+  height: 96px;
+  color: var(--br-bg);
+  opacity: 0.12;
+  transition: opacity 0.2s ease, color 0.2s ease;
+  z-index: 1;
+}
+.br .flow .fcard-ico svg { width: 100%; height: 100%; display: block; }
+.br .flow .fcard:hover .fcard-ico { opacity: 0.22; }
+.br .flow .ftog {
+  position: absolute;
+  top: 18px;
+  right: 22px;
+  font-size: 30px;
+  font-weight: 300;
+  line-height: 1;
+  color: var(--br-mute);
+  transition: color 0.2s ease;
+  z-index: 2;
+}
+.br .flow .fcard:hover .ftog { color: var(--br-yellow); }
+
+/* connector arrow between cards in a row */
+.br .flow .farrow {
+  position: absolute;
+  top: 50%;
+  right: -25px;
+  transform: translateY(-50%);
+  width: 26px;
+  height: 26px;
+  color: rgba(235, 234, 233, 0.45);
+  z-index: 4;
+}
+.br .flow .farrow svg { width: 100%; height: 100%; display: block; }
+
+/* full-section expanded step — same element, grown via FLIP (JS sets geometry) */
+.br .flow .fexpanded {
+  display: none;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  z-index: 5;
+  overflow: hidden;
+  transition:
+    top 0.5s cubic-bezier(0.22, 1, 0.36, 1),
+    left 0.5s cubic-bezier(0.22, 1, 0.36, 1),
+    width 0.5s cubic-bezier(0.22, 1, 0.36, 1),
+    height 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.br .flow .fboard[data-open='true'] .fexpanded { display: block; }
+.br .flow .fexp-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background: var(--br-fg);
+  border: 3px solid var(--br-bg);
+  overflow: hidden;
+}
+
+/* real content — present from the first frame of the grow (no fade-in) */
+.br .flow .fexp-body {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+}
+
+/* thin paper accent bar across the top edge (brutalist double-line) */
+.br .flow .fexp-accent {
+  display: block;
+  flex-shrink: 0;
+  width: 100%;
+  height: 3px;
+  background: var(--br-bg);
+}
+
+/* replica of a grid card, shown only while the box collapses on close so it
+   lands seamlessly on the real card underneath (same ink bg + paper text) */
+.br .flow .fexp-preview {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 22px 24px;
+  background: var(--br-fg);
+  color: var(--br-bg);
+  overflow: hidden;
+}
+
+.br .flow .fexp-ctrl { display: flex; gap: 10px; justify-content: flex-end; flex-shrink: 0; }
+.br .flow .fexp-btn {
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: 2px solid var(--br-bg);
+  color: var(--br-bg);
+  cursor: pointer;
+  transition: background 0.18s ease, color 0.18s ease, transform 0.18s ease;
+}
+.br .flow .fexp-btn svg { width: 22px; height: 22px; display: block; }
+.br .flow .fexp-btn:hover { background: var(--br-yellow); border-color: var(--br-yellow); color: var(--br-fg); }
+.br .flow .fexp-btn:focus-visible { outline: 3px solid var(--br-yellow); outline-offset: 3px; }
+.br .flow .fexp-close:hover { background: var(--br-bg); border-color: var(--br-bg); color: var(--br-fg); }
+
+/* body — media zone (left) + text zone (right), split by a 3px divider */
+.br .flow .fexp-media {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #e6e6e6;
+  color: var(--br-fg);
+  padding: 40px;
+  border-right: 3px solid var(--br-bg);
+}
+.br .flow .fexp-ico { width: 132px; height: 132px; display: block; }
+.br .flow .fexp-ico svg { width: 100%; height: 100%; display: block; }
+.br .flow .fexp-img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+  user-select: none;
+}
+/* cover — image fills the panel width edge-to-edge (only vertical padding) */
+.br .flow .fexp-media-cover { padding: 40px 0; }
+.br .flow .fexp-media-cover .fexp-img {
+  width: 100%;
+  height: 100%;
+  max-width: none;
+  max-height: none;
+  object-fit: cover;
+}
+/* fill-bottom — image spans full width, sits flush to the bottom edge, and
+   keeps its aspect ratio so nothing is cropped (may leave a gap at the top) */
+.br .flow .fexp-media-fillbottom { padding: 0; align-items: flex-end; justify-content: stretch; }
+.br .flow .fexp-media-fillbottom .fexp-img {
+  width: 100%;
+  height: auto;
+  max-width: none;
+  max-height: none;
+  object-fit: contain;
+  display: block;
+}
+.br .flow .fexp-text {
+  flex: 1;
+  min-width: 0;
   display: flex;
   flex-direction: column;
   gap: 16px;
-  color: var(--br-bg);
-  transition: color 0.2s;
+  padding: 40px 44px;
 }
-.br .what .cell:hover { color: var(--br-yellow); }
-.br .what .cell .k { font-size: 20px; font-weight: 800; line-height: 1.15; letter-spacing: -0.01em; }
-.br .what .ico { width: 72px; height: 72px; display: block; }
-.br .what .ico svg { width: 100%; height: 100%; display: block; }
-.br .what .cell .v { font-size: 16px; line-height: 24px; font-weight: 400; }
+.br .flow .fexp-text-body {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 24px;
+}
+.br .flow .fexp-text-main { display: flex; flex-direction: column; gap: 24px; }
+.br .flow .fexp-count {
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  color: var(--br-yellow);
+}
+.br .flow .fexp-heading { display: flex; flex-direction: column; gap: 8px; }
+.br .flow .fexp-title {
+  font-size: 40px;
+  font-weight: 900;
+  line-height: 44px;
+  letter-spacing: -0.02em;
+  color: var(--br-bg);
+}
+.br .flow .fexp-desc { font-size: 20px; line-height: 32px; font-weight: 400; color: var(--br-bg); }
+.br .flow .fexp-note { font-size: 16px; line-height: 32px; font-style: italic; color: var(--br-bg); }
+
+@media (prefers-reduced-motion: reduce) {
+  .br .flow .fcard,
+  .br .flow .fgrid,
+  .br .flow .fexpanded,
+  .br .flow .fexp-body,
+  .br .flow .fexp-preview,
+  .br .flow .facc-clip { transition: none !important; }
+}
 
 /* ─── Work — infinite marquee ─── */
 .br .work {
@@ -322,7 +625,6 @@
   line-height: 0.95;
   font-weight: 900;
   letter-spacing: -0.03em;
-  text-transform: uppercase;
 }
 .br .work .marquee { overflow: hidden; }
 .br .work .track {
@@ -489,7 +791,7 @@
   flex-direction: column;
   gap: 24px;
 }
-.br .contact .ctitle { font-size: 80px; font-weight: 900; letter-spacing: -0.04em; line-height: 100px; text-transform: uppercase; margin: 0; }
+.br .contact .ctitle { font-size: 80px; font-weight: 900; letter-spacing: -0.04em; line-height: 100px; margin: 0; }
 .br .contact .ccontent { display: flex; flex-direction: column; gap: 16px; }
 .br .contact .csub { font-size: 18px; font-weight: 500; line-height: 24px; margin: 0; }
 .br .contact .cinfo { display: flex; flex-direction: column; gap: 24px; max-width: 608px; }
@@ -510,7 +812,6 @@
 .br .contact .crow:hover .cval { text-decoration: underline; text-underline-offset: 3px; }
 .br .contact .ctext { display: flex; flex-direction: column; gap: 3px; align-items: flex-start; }
 .br .contact .clabel {
-  font-family: var(--font-jetbrains-mono), ui-monospace, monospace;
   font-size: 14px;
   font-weight: 500;
   line-height: 20px;
@@ -550,14 +851,21 @@
   letter-spacing: 0.16em;
 }
 
+/* Tablet + desktop: hero fills the viewport below the sticky topbar.
+   --top-h is published from JS (topbar height, live per breakpoint/resize). */
+@media (min-width: 768px) {
+  .br .hero { min-height: calc(100dvh - var(--top-h, 0px)); }
+  .br .hero .top-row { flex: 1; }
+}
+
 /* ═══════════════════════════════════════════════════════════════
    RESPONSIVE — Desktop large (≥1440px)
    More breathing room, slightly larger headlines.
    ═══════════════════════════════════════════════════════════════ */
 @media (min-width: 1440px) {
   .br .hero .top-row { padding: 64px 64px 0; gap: 48px; }
-  .br .hero .name { font-size: 96px; }
   .br .hero .photo { width: 420px; height: 560px; }
+  .br .hero .badge-col { width: 480px; height: 700px; }
   .br .sec { padding: 80px 64px; }
   .br .sec .head h2 { font-size: 72px; }
   .br .skl { padding: 64px 64px; }
@@ -580,10 +888,12 @@
   .br .hero .top-row { padding: 40px 32px 0; gap: 24px; }
   .br .hero .left { padding-top: 16px; }
   .br .hero .subtitle { font-size: 28px; line-height: 1.4; }
-  .br .hero .name { font-size: 56px; }
-  .br .hero .role { font-size: 22px; }
-  .br .hero .intro p { font-size: 16px; }
+  .br .hero .name { font-size: 56px; line-height: 1.1; }
+  .br .hero .desc { gap: 40px; }
+  .br .hero .role { font-size: 22px; line-height: 1.4; }
+  .br .hero .intro-p { font-size: 16px; }
   .br .hero .photo { width: 280px; height: 373px; border-top-width: 20px; border-left-width: 20px; }
+  .br .hero .badge-col { width: 320px; height: 540px; }
   .br .hero .icell { padding: 24px 0; }
   .br .hero .icell .k { font-size: 13px; }
   .br .hero .icell .v { font-size: 14px; }
@@ -597,9 +907,19 @@
   .br .sec .head { margin-bottom: 28px; }
   .br .sec .head h2 { font-size: 44px; }
 
-  /* What — 2 cols */
-  .br .what .head { margin-bottom: 48px; }
-  .br .what .grid { grid-template-columns: repeat(2, 1fr); gap: 40px 32px; }
+  /* Flow — tighter (still 3 cols) */
+  .br .flow .frow { gap: 16px; }
+  .br .flow .fcard { aspect-ratio: 5 / 4; padding: 18px; }
+  .br .flow .fcard-title { font-size: 19px; }
+  .br .flow .fcard-ico { width: 76px; height: 76px; }
+  .br .flow .farrow { right: -18px; width: 20px; height: 20px; }
+  .br .flow .fgrid { gap: 16px; }
+  .br .flow .fexp-card { min-height: 440px; }
+  .br .flow .fexp-title { font-size: 32px; line-height: 36px; }
+  .br .flow .fexp-ico { width: 104px; height: 104px; }
+  .br .flow .fexp-text { padding: 32px 32px; }
+  .br .flow .fexp-desc { font-size: 18px; line-height: 29px; }
+  .br .flow .fexp-preview { padding: 18px; }
 
   /* Work marquee */
   .br .work { padding: 48px 0; }
@@ -644,7 +964,7 @@
    ═══════════════════════════════════════════════════════════════ */
 @media (max-width: 767px) {
   /* Topbar — burger + lang */
-  .br .top { flex-direction: row; align-items: stretch; }
+  .br .top { flex-direction: row; align-items: stretch; padding: 0; }
   .br .top .lhs { display: none; }
   .br .burger { display: inline-flex; padding: 14px 18px; }
   .br .top .lang { display: flex; margin-left: auto; }
@@ -655,15 +975,33 @@
     gap: 6px;
   }
 
-  /* Hero — stack column (text first, photo below) */
-  .br .hero .top-row { flex-direction: column; padding: 24px 20px 0; gap: 24px; }
-  .br .hero .left { padding-top: 0; gap: 12px; }
-  .br .hero .subtitle { font-size: 18px; letter-spacing: 0.12em; line-height: 1.4; }
-  .br .hero .name { font-size: 48px; line-height: 1.05; }
-  .br .hero .desc { padding: 8px 0; gap: 10px; }
-  .br .hero .role { font-size: 18px; letter-spacing: 0.1em; }
-  .br .hero .intro p { font-size: 18px; }
+  /* Hero — stack column: name → "product designer" → crachá → intro.
+     .left and .desc flatten (display:contents) so headline/role/intro become
+     top-row siblings and the badge can slot right after the role. */
+  .br .hero { margin-bottom: 24px; }
+  .br .hero .top-row { flex-direction: column; padding: 56px 20px 0; gap: 24px; }
+  .br .hero .left { display: contents; }
+  .br .hero .desc { display: contents; }
+  .br .hero .headline { order: 1; }
+  .br .hero .role { order: 2; z-index: 2; } /* stays above the cord */
+  /* Yellow mark grows rightward only, right edge landing at 66vw. Its left edge
+     is 8px before .role-mark (--mark-left, from JS), so subtract that offset. */
+  .br .hero .role-mark::before {
+    left: -8px;
+    right: auto;
+    width: calc(66vw - var(--mark-left, 0px) + 8px);
+  }
+  /* +32px breathing room above the badge; z-index just under .role so the
+     lanyard cord reads as passing behind the yellow "product designer" mark. */
+  .br .hero .badge-col { order: 3; margin-top: 32px; z-index: 1; }
+  .br .hero .intro { order: 4; }
+  .br .hero .subtitle { font-size: 28px; line-height: 1.4; }
+  .br .hero .name { font-size: 56px; line-height: 1.1; }
+  .br .hero .desc { padding: 8px 0; gap: 32px; }
+  .br .hero .role { font-size: 22px; line-height: 1.4; }
+  .br .hero .intro-p { font-size: 16px; }
   .br .hero .photo-col { width: 100%; }
+  .br .hero .badge-col { width: 100%; height: 460px; }
   .br .hero .photo {
     width: 100%;
     height: auto;
@@ -687,10 +1025,52 @@
   .br .sec .head .n { font-size: 12px; }
   .br .sec .head h2 { font-size: 32px; line-height: 1; }
 
-  /* What — 1 col */
-  .br .what .head { margin-bottom: 32px; }
-  .br .what .grid { grid-template-columns: 1fr; gap: 36px; }
-  .br .what .cell .k { font-size: 18px; }
+  /* Flow — 1 col stacked nodes; expanded view stacks media over text */
+  .br .flow .head { margin-bottom: 32px; }
+  .br .flow .fgrid { gap: 12px; }
+  .br .flow .frow { grid-template-columns: 1fr; gap: 12px; }
+  .br .flow .fcard { aspect-ratio: auto; min-height: 96px; padding: 18px 20px; }
+  .br .flow .fcard-title { font-size: 19px; max-width: 78%; }
+  .br .flow .fcard-ico { width: 72px; height: 72px; right: -8px; bottom: -8px; }
+  .br .flow .ftog { top: 16px; right: 18px; }
+  .br .flow .farrow { display: none; }
+
+  .br .flow .fexp-card { min-height: 0; }
+  .br .flow .fexp-title { font-size: 24px; line-height: 28px; }
+  .br .flow .fexp-count { font-size: 12px; }
+  .br .flow .fexp-btn { width: 42px; height: 42px; }
+  .br .flow .fexp-ctrl { gap: 8px; }
+  .br .flow .fexp-body { flex-direction: column; }
+  /* Stacked on mobile: media and text size to their own content (no fixed
+     board height to split between them) so text is never clipped. */
+  .br .flow .fexp-media { flex: none; padding: 32px; border-right: none; border-bottom: 3px solid var(--br-bg); }
+  /* fill-bottom keeps zero padding on mobile so the image stays flush to the edges */
+  .br .flow .fexp-media-fillbottom { padding: 0; }
+  /* cover → on mobile show the full image flush to the container edges (no crop,
+     no padding): full width, natural height, so it touches all four borders. */
+  .br .flow .fexp-media-cover { padding: 0; }
+  .br .flow .fexp-media-cover .fexp-img {
+    width: 100%;
+    height: auto;
+    object-fit: contain;
+  }
+  .br .flow .fexp-text { flex: none; }
+  .br .flow .fexp-text-body { flex: none; }
+  .br .flow .fexp-ico { width: 88px; height: 88px; }
+  .br .flow .fexp-text { padding: 24px 20px; }
+  .br .flow .fexp-desc { font-size: 16px; line-height: 26px; }
+  .br .flow .fexp-text-body { gap: 20px; }
+  .br .flow .fexp-note { font-size: 14px; line-height: 26px; }
+  .br .flow .fexp-preview { padding: 18px 20px; }
+  /* Mobile accordion: grid stays visible while a step is open, and the open
+     step expands inline right below its card. */
+  .br .flow .fboard[data-open='true'] .fgrid { opacity: 1; transform: none; pointer-events: auto; }
+  .br .flow .facc { width: 100%; }
+  .br .flow .facc .fexp-card { height: auto; }
+  /* Accordion open/close/step: the clip's pixel height is morphed in JS so a
+     step-change grows/shrinks from the previous card's size instead of reopening
+     from zero. Overflow hidden clips content while it's shorter than natural. */
+  .br .flow .facc-clip { overflow: hidden; }
 
   /* Work marquee */
   .br .work { padding: 36px 0; }
